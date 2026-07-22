@@ -2,27 +2,46 @@
 =========================================================
 LLM Engine
 ---------------------------------------------------------
-Generates AI-powered financial summaries using Gemini.
-If Gemini fails, returns None so the application
-continues to work.
+Handles communication with the LLM provider (OpenRouter).
+
+Responsibilities:
+- Build request to OpenRouter
+- Send prompt
+- Receive AI response
+- Handle all API/network errors gracefully
+
+NOTE:
+Prompt generation is handled separately by PromptBuilder.
 =========================================================
 """
+
 import os
-import time
+import requests
+
 from dotenv import load_dotenv
-from google import genai
-from google.genai import errors
+
+from services.prompt_builder import PromptBuilder
 
 load_dotenv()
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
 
 class LLMEngine:
+    """
+    LLM Engine for generating AI-powered financial summaries.
+    """
 
-    @staticmethod
+    API_URL = "https://openrouter.ai/api/v1/chat/completions"
+
+    API_KEY = os.getenv("OPENROUTER_API_KEY")
+
+    MODEL = os.getenv(
+        "LLM_MODEL",
+        "deepseek/deepseek-chat"
+    )
+
+    @classmethod
     def generate_summary(
+        cls,
         persona: str,
         score: float,
         health_status: str,
@@ -30,62 +49,115 @@ class LLMEngine:
         weaknesses: list[str],
         risks: list[str],
         recommendations: list[str],
-    ):
+    ) -> str | None:
+        """
+        Generates an AI-powered financial summary.
 
-        prompt = f"""
-You are an experienced financial advisor.
+        Returns:
+            str  -> AI generated report
+            None -> If any error occurs
+        """
 
-Financial Persona: {persona}
-Financial Health Score: {score:.2f}
-Health Status: {health_status}
+        # ----------------------------
+        # Build Prompt
+        # ----------------------------
 
-Strengths:
-{chr(10).join("- " + s for s in strengths)}
+        prompt = PromptBuilder.financial_summary_prompt(
+            persona=persona,
+            score=score,
+            health_status=health_status,
+            strengths=strengths,
+            weaknesses=weaknesses,
+            risks=risks,
+            recommendations=recommendations,
+        )
 
-Weaknesses:
-{chr(10).join("- " + w for w in weaknesses)}
+        # ----------------------------
+        # Request Payload
+        # ----------------------------
+        if not cls.API_KEY:
+            print("[LLM ERROR] OPENROUTER_API_KEY not found.")
+            return None
 
-Risks:
-{chr(10).join("- " + r for r in risks)}
+        payload = {
+            "model": cls.MODEL,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        }
 
-Recommendations:
-{chr(10).join("- " + rec for rec in recommendations)}
+        headers = {
+            "Authorization": f"Bearer {cls.API_KEY}",
+            "Content-Type": "application/json"
+        }
 
-Instructions:
-- Write a financial report in about 150 words.
-- Use simple language.
-- Encourage the user.
-- Never change the financial score.
-- Never invent information.
-- Explain why the user received this score.
-"""
+        # ----------------------------
+        # API Request
+        # ----------------------------
 
-        max_retries = 3
-        
-        for attempt in range(max_retries):
+        try:
+
+            response = requests.post(
+                cls.API_URL,
+                headers=headers,
+                json=payload,
+                timeout=30,
+            )
+
+            response.raise_for_status()
+
+            data = response.json()
+
+            return data["choices"][0]["message"]["content"]
+
+        # ----------------------------
+        # Error Handling
+        # ----------------------------
+
+        except requests.exceptions.Timeout:
+
+            print("\n[LLM ERROR] Request timed out.")
+
+            return None
+
+        except requests.exceptions.ConnectionError:
+
+            print("\n[LLM ERROR] Unable to connect to OpenRouter.")
+
+            return None
+
+        except requests.exceptions.HTTPError:
+
+            print(f"\n[LLM ERROR] HTTP {response.status_code}")
+
             try:
-                response = client.models.generate_content(
-                    model="gemini-3.5-flash",
-                    contents=prompt,
-                )
-                return response.text
-                
-            except errors.ServerError as e:
-                # Handle temporary server overloads gracefully
-                if e.code == 503:
-                    print(f"Gemini Server busy (503). Retrying {attempt + 1}/{max_retries} in 5 seconds...")
-                    time.sleep(5)
-                else:
-                    print(f"Gemini Server Error: {e}")
-                    break
-            except Exception as e:
-                # Catch general network drops (like getaddrinfo failed) or SSL timeouts
-                print(f"Gemini Unexpected Error (Attempt {attempt + 1}): {e}")
-                if attempt < max_retries - 1:
-                    time.sleep(5)
-                else:
-                    break
+                error = response.json()
 
-        # Fallback to None if all retries fail so the frontend doesn't crash
-        print("LLMEngine failed to generate summary. Returning None.")
-        return None
+                print(error)
+
+            except Exception:
+
+                print(response.text)
+
+            return None
+
+        except KeyError:
+
+            print("\n[LLM ERROR] Unexpected response format.")
+
+            try:
+                print(response.json())
+
+            except Exception:
+                pass
+
+            return None
+
+        except Exception as e:
+
+            print(f"\n[LLM ERROR] {type(e).__name__}: {e}")
+
+            return None
