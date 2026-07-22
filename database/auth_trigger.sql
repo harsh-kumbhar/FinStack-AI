@@ -15,22 +15,24 @@ BEGIN
     -- Create user_profile
     --------------------------------------------------
 
-    INSERT INTO public.user_profile
-    (
-        user_id,
-        full_name
-    )
-    VALUES
-    (
-        NEW.id,
-        COALESCE(
-            NEW.raw_user_meta_data->>'full_name',
-            NEW.raw_user_meta_data->>'name',
-            split_part(NEW.email,'@',1)
-        )
-    )
-    RETURNING id
-    INTO profile_uuid;
+ INSERT INTO public.user_profile
+(
+    user_id,
+    full_name,
+    email
+)
+VALUES
+(
+    NEW.id,
+    COALESCE(
+        NEW.raw_user_meta_data->>'full_name',
+        NEW.raw_user_meta_data->>'name',
+        split_part(NEW.email,'@',1)
+    ),
+    NEW.email
+)
+RETURNING id
+INTO profile_uuid;
 
     --------------------------------------------------
     -- Create financial_profile
