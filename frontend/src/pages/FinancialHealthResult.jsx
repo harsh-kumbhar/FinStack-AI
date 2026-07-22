@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-
+import ReactMarkdown from 'react-markdown';
 const styles = {
     layout: {
         display: 'flex',
@@ -353,7 +353,9 @@ export default function FinancialHealthResult() {
                             <h3 style={{ ...styles.sectionTitle, marginBottom: '12px' }}>AI Financial Diagnosis</h3>
                             {ai_summary && (
                                 <div style={styles.aiSummaryBox}>
-                                    <strong>Summary:</strong> {ai_summary}
+                                    <strong>Summary:</strong> <ReactMarkdown>
+                                        {ai_summary}
+                                    </ReactMarkdown>
                                 </div>
                             )}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: 'var(--text2)' }}>

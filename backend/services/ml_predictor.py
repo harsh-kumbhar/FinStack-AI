@@ -16,8 +16,6 @@ from ml.predict import (
 
 from services.rule_engine import RuleEngine
 
-from services.llm_engine import LLMEngine
-
 
 class MLPredictorService:
 
@@ -60,7 +58,14 @@ class MLPredictorService:
         )
 
         return {
-            "score": score,
-            **analysis,
-            "ai_summary": ai_summary,
-        }
+
+        "score": score,
+
+        **analysis,
+
+        "ai_summary": ai_summary,
+
+        "engineered_features": engineered_features.model_dump(),
+
+        "persona": persona,
+    }

@@ -1,5 +1,5 @@
 import axios from 'axios';
-
+import { supabase } from "../services/supabase";
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const financialHealthService = {
@@ -10,18 +10,30 @@ export const financialHealthService = {
    */
   async predictFinancialHealth(profileData) {
     try {
-      const response = await axios.post(`${API_URL}/financial-health/predict`, {
-        age: parseInt(profileData.age, 10),
-        employment_status: profileData.employment_status,
-        monthly_income: parseFloat(profileData.monthly_income),
-        monthly_expenses: parseFloat(profileData.monthly_expenses),
-        monthly_savings: parseFloat(profileData.monthly_savings),
-        emergency_fund: parseFloat(profileData.emergency_fund),
-        total_debt: parseFloat(profileData.total_debt),
-        investments: parseFloat(profileData.investments),
-        insurance_cover: parseFloat(profileData.insurance_cover),
-        financial_goal: profileData.financial_goal
-      });
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+
+        const response = await axios.post(
+            `${API_URL}/financial-health/predict`,
+            {
+                age: parseInt(profileData.age, 10),
+                employment_status: profileData.employment_status,
+                monthly_income: parseFloat(profileData.monthly_income),
+                monthly_expenses: parseFloat(profileData.monthly_expenses),
+                monthly_savings: parseFloat(profileData.monthly_savings),
+                emergency_fund: parseFloat(profileData.emergency_fund),
+                total_debt: parseFloat(profileData.total_debt),
+                investments: parseFloat(profileData.investments),
+                insurance_cover: parseFloat(profileData.insurance_cover),
+                financial_goal: profileData.financial_goal,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            }
+        );
       return response.data;
     } catch (error) {
       console.error('Error fetching prediction from backend:', error);
@@ -29,7 +41,7 @@ export const financialHealthService = {
       // Fallback/Mock Response if the backend is down or returns error
       const mockResult = this.getMockPrediction(profileData);
       console.log('Using mock response as fallback:', mockResult);
-      return mockResult;
+  
     }
   },
 

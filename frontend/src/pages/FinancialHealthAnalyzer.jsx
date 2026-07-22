@@ -255,7 +255,7 @@ export default function FinancialHealthAnalyzer() {
 
                     if (finProfile) {
                         setFormData({
-                            age: finProfile.age || 30,
+                            age: userProfile.age || 30,
                             employment_status: finProfile.employment_status || 'salaried',
                             monthly_income: finProfile.monthly_income || '',
                             monthly_expenses: finProfile.monthly_expenses || '',

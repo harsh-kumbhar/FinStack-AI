@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import datetime
 
 
 # ==========================================================
@@ -58,6 +59,8 @@ class FinancialHealthFeatures(BaseModel):
 
 class PredictionResult(BaseModel):
 
+    report_id: str
+
     ml_health_score: float
 
     health_status: str
@@ -95,3 +98,26 @@ class FinancialHealthReport(BaseModel):
     recommendations: list[str] = []
 
     next_steps: list[str] = []
+
+
+
+class HistoryReport(BaseModel):
+
+    id: str
+
+    created_at: datetime
+
+    ml_health_score: float
+
+    final_health_score: float
+
+    rule_health_score: float
+
+    health_status: str
+
+    ai_summary: str | None = None
+
+
+class HistoryReportList(BaseModel):
+
+    reports: list[HistoryReport]
