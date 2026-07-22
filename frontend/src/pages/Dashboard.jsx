@@ -208,8 +208,8 @@ const styles = {
 };
 
 const SIDEBAR_ITEMS = [
-    { label: 'Dashboard', active: true },
-    { label: 'Financial Health Analyzer', soon: true },
+    { label: 'Dashboard', active: true, path: '/dashboard' },
+    { label: 'Financial Health Analyzer', path: '/health-analyzer' },
     { label: 'SmartFeed', soon: true },
     { label: 'Document Intelligence', soon: true },
     { label: 'Loan Risk Assessment', soon: true },
@@ -293,7 +293,13 @@ export default function Dashboard() {
                         <div
                             key={idx}
                             style={{ ...styles.navItem, ...(item.active ? styles.navItemActive : {}) }}
-                            onClick={() => item.soon ? handleFeatureClick('soon') : null}
+                            onClick={() => {
+                                if (item.soon) {
+                                    handleFeatureClick('soon');
+                                } else if (item.path) {
+                                    navigate(item.path);
+                                }
+                            }}
                         >
                             <span>{item.label}</span>
                             {item.soon && <span style={styles.badge}>Soon</span>}
@@ -354,7 +360,7 @@ export default function Dashboard() {
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                                 <button style={styles.btnPrimary} onClick={() => navigate('/profile')}>Edit Profile</button>
                                 <button style={styles.btnOutline} onClick={() => handleFeatureClick('soon')}>Upload Document</button>
-                                <button style={styles.btnOutline} onClick={() => handleFeatureClick('soon')}>Analyze Finances</button>
+                                <button style={styles.btnOutline} onClick={() => navigate('/health-analyzer')}>Analyze Finances</button>
                                 <button style={styles.btnOutline} onClick={() => handleFeatureClick('soon')}>Refresh Dashboard</button>
                             </div>
                         </div>
@@ -395,7 +401,7 @@ export default function Dashboard() {
                                     <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>Financial Health Analyzer</div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
                                         <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
-                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => handleFeatureClick('soon')}>Open</button>
+                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/health-analyzer')}>Open</button>
                                     </div>
                                 </div>
 
