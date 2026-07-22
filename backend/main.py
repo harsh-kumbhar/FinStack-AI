@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 
-app = FastAPI(title="FinStack API")
+from routers.financial_health import router as financial_health_router
 
+app = FastAPI(
+    title="FinStack API",
+    version="1.0.0",
+)
 
-@app.get("/")
-def root():
-    return {
-        "message": "Welcome to FinStack API!"
-    }
+app.include_router(financial_health_router)
