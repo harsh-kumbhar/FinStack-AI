@@ -1,0 +1,65 @@
+:root {
+    /* ===========================
+     Brand Colors
+  ============================ */
+
+    --navy: #003580;
+    --navy2: #0052CC;
+    --navy3: #1565C0;
+    --saffron: #E65C00;
+    --saffron2: #F4840C;
+    --saffron-light: #FFF3E6;
+    --india-green: #138808;
+    --india-green2: #1B9E18;
+    /* ===========================
+     Backgrounds
+  ============================ */
+
+    --bg: #F5F7FA;
+    --bg2: #EEF1F5;
+    --white: #FFFFFF;
+    /* ===========================
+     Text
+  ============================ */
+
+    --text: #1A1A2E;
+    --text2: #4B5563;
+    --text3: #9CA3AF;
+    /* ===========================
+     Borders
+  ============================ */
+
+    --border: #DDE3ED;
+    --border2: #B8C5D8;
+    /* ===========================
+     Semantic Colors
+  ============================ */
+
+    --success: #0A8A4C;
+    --success-light: #E6F7EF;
+    --warning: #D97706;
+    --warning-light: #FFFBEB;
+    --error: #C0392B;
+    --error-light: #FEE2E2;
+    --info: #0052CC;
+    --info-light: #EFF4FF;
+    /* ===========================
+     Shadows
+  ============================ */
+
+    --shadow-sm: 0 1px 4px rgba(0,0,0,0.08);
+    --shadow: 0 4px 16px rgba(0,53,128,0.08);
+    --shadow-md: 0 8px 32px rgba(0,53,128,0.12);
+    /* ===========================
+     Border Radius
+  ============================ */
+
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 10px;
+    /* ===========================
+     Transition
+  ============================ */
+
+    --transition: all .3s ease;
+}
