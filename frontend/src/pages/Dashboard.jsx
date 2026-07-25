@@ -210,7 +210,7 @@ const styles = {
 const SIDEBAR_ITEMS = [
     { label: 'Dashboard', active: true, path: '/dashboard' },
     { label: 'Financial Health Analyzer', path: '/health-analyzer' },
-    { label: 'SmartFeed', soon: true },
+    { label: 'SmartFeed', active: true },
     { label: 'Document Intelligence', soon: true },
     { label: 'Loan Risk Assessment', soon: true },
     { label: 'Tax Estimator', soon: true },
