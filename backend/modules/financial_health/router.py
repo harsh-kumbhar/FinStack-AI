@@ -1,17 +1,17 @@
 from fastapi import APIRouter
 from fastapi import Depends
-from database import get_current_user
-from services.history_service import HistoryService
+from common.database import get_current_user
+from modules.financial_health.history_service import HistoryService
 from fastapi import HTTPException
 
-from schemas.financial_health import (
+from modules.financial_health.schema import (
     FinancialProfileData,
     PredictionResult,
     HistoryReport,
     HistoryReportList,
 )
 
-from services.ml_predictor import (
+from modules.financial_health.ml_predictor import (
     MLPredictorService,
 )
 

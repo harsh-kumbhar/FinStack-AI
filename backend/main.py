@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers.financial_health import router as financial_health_router
+from modules.financial_health.router import router as financial_health_router
 
 app = FastAPI(
     title="FinStack API",

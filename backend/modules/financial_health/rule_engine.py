@@ -7,7 +7,7 @@ and engineered financial features.
 =========================================================
 """
 
-from schemas.financial_health import (
+from modules.financial_health.schema import (
     FinancialHealthFeatures,
 )
 

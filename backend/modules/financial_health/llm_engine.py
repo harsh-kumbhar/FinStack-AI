@@ -20,7 +20,7 @@ import requests
 
 from dotenv import load_dotenv
 
-from services.prompt_builder import PromptBuilder
+from modules.financial_health.prompt_builder import PromptBuilder
 
 load_dotenv()
 

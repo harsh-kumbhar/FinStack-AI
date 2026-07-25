@@ -1,4 +1,4 @@
-from schemas.financial_health import (
+from modules.financial_health.schema import (
     FinancialProfileData,
     FinancialHealthFeatures,
 )

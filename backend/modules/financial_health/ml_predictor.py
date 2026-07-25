@@ -1,12 +1,12 @@
-from schemas.financial_health import (
+from modules.financial_health.schema import (
     FinancialProfileData,
 )
 
-from services.feature_engineering import (
+from modules.financial_health.feature_engineering import (
     FeatureEngineeringService,
 )
 
-from services.persona_classifier import (
+from modules.financial_health.persona_classifier import (
     PersonaClassifierService,
 )
 
@@ -14,7 +14,7 @@ from ml.predict import (
     predict_score,
 )
 
-from services.rule_engine import RuleEngine
+from modules.financial_health.rule_engine import RuleEngine
 
 
 class MLPredictorService:
@@ -45,7 +45,7 @@ class MLPredictorService:
             score,
             engineered_features,
         )
-        from services.llm_engine import LLMEngine
+        from modules.financial_health.llm_engine import LLMEngine
 
         ai_summary = LLMEngine.generate_summary(
             persona=persona,

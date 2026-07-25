@@ -1,4 +1,4 @@
-from database import supabase
+from common.database import supabase
 
 
 class HistoryService:
