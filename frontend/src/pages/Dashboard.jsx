@@ -359,9 +359,9 @@ export default function Dashboard() {
                             <h3 style={styles.cardTitle}>Quick Actions</h3>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                                 <button style={styles.btnPrimary} onClick={() => navigate('/profile')}>Edit Profile</button>
-                                <button style={styles.btnOutline} onClick={() => handleFeatureClick('Soon')}>Upload Document</button>
+                                <button style={styles.btnOutline} onClick={() => handleFeatureClick('soon')}>Upload Document</button>
                                 <button style={styles.btnOutline} onClick={() => navigate('/health-analyzer')}>Analyze Finances</button>
-                                <button style={styles.btnOutline} onClick={() => handleFeatureClick('Soon')}>Refresh Dashboard</button>
+                                <button style={styles.btnOutline} onClick={() => handleFeatureClick('soon')}>Refresh Dashboard</button>
                             </div>
                         </div>
                     </div>
