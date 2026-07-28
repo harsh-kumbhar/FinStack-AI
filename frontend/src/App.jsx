@@ -5,6 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import ProfileCompletion from "./pages/ProfileCompletion";
 import FinancialHealthAnalyzer from "./pages/FinancialHealthAnalyzer";
 import FinancialHealthResult from "./pages/FinancialHealthResult";
+import SmartFeed from "./pages/SmartFeed";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -46,6 +47,15 @@ function App() {
                 element={
                     <ProtectedRoute requireProfile={false}>
                         <FinancialHealthResult />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/smartfeed"
+                element={
+                    <ProtectedRoute requireProfile={false}>
+                        <SmartFeed />
                     </ProtectedRoute>
                 }
             />

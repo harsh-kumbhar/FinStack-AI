@@ -1,0 +1,551 @@
+/* ============================================
+   SmartFeed Module Styles
+   Follows project CSS variable system from variables.css
+   ============================================ */
+
+/* ── Page Layout ── */
+.sf-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg);
+    font-family: 'Noto Sans', 'Segoe UI', sans-serif;
+}
+
+.sf-main {
+    flex: 1;
+    margin-left: 240px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sf-topbar {
+    position: fixed;
+    top: 0;
+    left: 240px;
+    right: 0;
+    height: 64px;
+    background-color: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 32px;
+    z-index: 90;
+    box-shadow: var(--shadow-sm);
+}
+
+.sf-content {
+    margin-top: 64px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ── Page Header ── */
+.sf-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.sf-page-title {
+    font-family: 'Noto Serif', Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.2;
+}
+
+.sf-page-sub {
+    font-size: 14px;
+    color: var(--text2);
+    margin-top: 4px;
+}
+
+/* ── Search Bar ── */
+.sf-search-wrap {
+    position: relative;
+    width: 320px;
+}
+
+.sf-search-input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-family: 'Noto Sans', sans-serif;
+    background: var(--white);
+    color: var(--text);
+    outline: none;
+    transition: var(--transition);
+}
+
+.sf-search-input:focus {
+    border-color: var(--navy2);
+    box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.08);
+}
+
+.sf-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    pointer-events: none;
+}
+
+/* ── Categories ── */
+.sf-categories {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.sf-cat-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    background: var(--white);
+    color: var(--text2);
+    transition: var(--transition);
+    white-space: nowrap;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.sf-cat-btn:hover {
+    border-color: var(--navy2);
+    color: var(--navy2);
+    background: var(--info-light);
+}
+
+.sf-cat-btn.active {
+    background: var(--navy);
+    color: var(--white);
+    border-color: var(--navy);
+}
+
+/* ── Trending Strip ── */
+.sf-trending-strip {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    box-shadow: var(--shadow-sm);
+}
+
+.sf-trending-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sf-trending-items {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.sf-trending-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.sf-trending-item:hover {
+    background: var(--info-light);
+    border-color: var(--navy2);
+    color: var(--navy2);
+}
+
+/* ── Feed Grid ── */
+.sf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+}
+
+/* ── Article Card ── */
+.sf-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.sf-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+    border-color: var(--border2);
+}
+
+.sf-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px 0;
+}
+
+.sf-card-tag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--info-light);
+    color: var(--navy2);
+}
+
+.sf-card-bookmark {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 2px;
+    transition: var(--transition);
+}
+
+.sf-card-bookmark:hover {
+    transform: scale(1.2);
+}
+
+.sf-card-body {
+    padding: 12px 16px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sf-card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.4;
+    font-family: 'Noto Serif', Georgia, serif;
+}
+
+.sf-card-summary {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.65;
+    flex: 1;
+}
+
+/* ── AI Summary Box ── */
+.sf-ai-box {
+    background: var(--info-light);
+    border: 1px solid rgba(0, 82, 204, 0.15);
+    border-left: 3px solid var(--navy2);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.55;
+}
+
+.sf-ai-box-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--navy2);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 4px;
+}
+
+/* ── Card Footer ── */
+.sf-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.sf-card-meta {
+    font-size: 12px;
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sf-read-btn {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy2);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 4px 12px;
+    cursor: pointer;
+    font-family: 'Noto Sans', sans-serif;
+    transition: var(--transition);
+}
+
+.sf-read-btn:hover {
+    background: var(--info-light);
+    border-color: var(--navy2);
+}
+
+/* ── Government Scheme Card ── */
+.sf-scheme-card {
+    border-left: 4px solid var(--india-green);
+}
+
+.sf-scheme-card .sf-card-tag {
+    background: var(--success-light);
+    color: var(--india-green);
+}
+
+.sf-scheme-card .sf-ai-box {
+    background: var(--success-light);
+    border-color: rgba(19, 136, 8, 0.2);
+    border-left-color: var(--india-green);
+}
+
+.sf-scheme-card .sf-ai-box-label {
+    color: var(--india-green);
+}
+
+/* ── AI Pick Card ── */
+.sf-ai-card {
+    border-left: 4px solid var(--navy2);
+    background: linear-gradient(to bottom, var(--info-light), var(--white));
+}
+
+/* ── Dashboard Widget ── */
+.sf-widget {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.sf-widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.sf-widget-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sf-widget-link {
+    font-size: 12px;
+    color: var(--navy2);
+    font-weight: 600;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.sf-widget-link:hover {
+    text-decoration: underline;
+}
+
+.sf-widget-body {
+    padding: 0;
+}
+
+.sf-widget-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.sf-widget-item:last-child {
+    border-bottom: none;
+}
+
+.sf-widget-item:hover {
+    background: var(--bg);
+}
+
+.sf-widget-item-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.sf-widget-item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.sf-widget-item-meta {
+    font-size: 11px;
+    color: var(--text3);
+}
+
+/* ── Loading Skeleton ── */
+.sf-skeleton {
+    background: linear-gradient(90deg, var(--bg2) 25%, var(--border) 50%, var(--bg2) 75%);
+    background-size: 200% 100%;
+    animation: sf-shimmer 1.4s infinite;
+    border-radius: var(--radius-sm);
+}
+
+@keyframes sf-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.sf-skeleton-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* ── Empty State ── */
+.sf-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 24px;
+    text-align: center;
+    color: var(--text2);
+    gap: 12px;
+}
+
+.sf-empty-icon {
+    font-size: 48px;
+    margin-bottom: 8px;
+}
+
+.sf-empty-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.sf-empty-sub {
+    font-size: 14px;
+    color: var(--text2);
+}
+
+/* ── Error State ── */
+.sf-error {
+    background: var(--error-light);
+    border: 1px solid rgba(192, 57, 43, 0.2);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--error);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ── Tabs (Bookmarks / History) ── */
+.sf-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+}
+
+.sf-tab {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: var(--text2);
+    border-bottom: 3px solid transparent;
+    transition: var(--transition);
+    font-family: 'Noto Sans', sans-serif;
+}
+
+.sf-tab:hover {
+    color: var(--navy2);
+}
+
+.sf-tab.active {
+    color: var(--navy);
+    border-bottom-color: var(--saffron);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .sf-main {
+        margin-left: 0;
+    }
+
+    .sf-topbar {
+        left: 0;
+    }
+
+    .sf-content {
+        padding: 20px 16px;
+    }
+
+    .sf-search-wrap {
+        width: 100%;
+    }
+
+    .sf-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sf-page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

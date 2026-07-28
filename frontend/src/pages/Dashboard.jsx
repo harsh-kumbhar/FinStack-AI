@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import SmartFeedWidget from '../components/smartfeed/SmartFeedWidget';
 
 const styles = {
     layout: {
@@ -210,7 +211,7 @@ const styles = {
 const SIDEBAR_ITEMS = [
     { label: 'Dashboard', active: true, path: '/dashboard' },
     { label: 'Financial Health Analyzer', path: '/health-analyzer' },
-    { label: 'SmartFeed', active: true },
+    { label: 'SmartFeed', path: '/smartfeed' },
     { label: 'Document Intelligence', soon: true },
     { label: 'Loan Risk Assessment', soon: true },
     { label: 'Tax Estimator', soon: true },
@@ -405,8 +406,15 @@ export default function Dashboard() {
                                     </div>
                                 </div>
 
+                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>SmartFeed</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+                                        <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
+                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/smartfeed')}>Open</button>
+                                    </div>
+                                </div>
+
                                 {[
-                                    'SmartFeed',
                                     'Document Intelligence',
                                     'Loan Risk Assessment',
                                     'Tax Estimator',
@@ -422,31 +430,35 @@ export default function Dashboard() {
                             </div>
                         </div>
 
-                        {/* RECENT ACTIVITY */}
-                        <div>
-                            <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginBottom: '20px' }}>Recent Activity</h3>
-                            <div style={styles.card}>
-                                <div style={styles.timelineItem}>
-                                    <div style={styles.timelineDot}></div>
-                                    <div>
-                                        <div style={{ fontWeight: '600', color: 'var(--text)' }}>Dashboard Loaded</div>
-                                        <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Just now</div>
-                                    </div>
-                                </div>
-                                {isProfileComplete && (
+                        {/* RECENT ACTIVITY & SMARTFEED */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                            <SmartFeedWidget />
+
+                            <div>
+                                <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginBottom: '20px' }}>Recent Activity</h3>
+                                <div style={styles.card}>
                                     <div style={styles.timelineItem}>
-                                        <div style={{ ...styles.timelineDot, backgroundColor: 'var(--success)' }}></div>
+                                        <div style={styles.timelineDot}></div>
                                         <div>
-                                            <div style={{ fontWeight: '600', color: 'var(--text)' }}>Financial Information Saved</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Recent</div>
+                                            <div style={{ fontWeight: '600', color: 'var(--text)' }}>Dashboard Loaded</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Just now</div>
                                         </div>
                                     </div>
-                                )}
-                                <div style={styles.timelineItem}>
-                                    <div style={{ ...styles.timelineDot, backgroundColor: 'var(--info)' }}></div>
-                                    <div>
-                                        <div style={{ fontWeight: '600', color: 'var(--text)' }}>Google Login Successful</div>
-                                        <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Recent</div>
+                                    {isProfileComplete && (
+                                        <div style={styles.timelineItem}>
+                                            <div style={{ ...styles.timelineDot, backgroundColor: 'var(--success)' }}></div>
+                                            <div>
+                                                <div style={{ fontWeight: '600', color: 'var(--text)' }}>Financial Information Saved</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Recent</div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div style={styles.timelineItem}>
+                                        <div style={{ ...styles.timelineDot, backgroundColor: 'var(--info)' }}></div>
+                                        <div>
+                                            <div style={{ fontWeight: '600', color: 'var(--text)' }}>Google Login Successful</div>
+                                            <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Recent</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
