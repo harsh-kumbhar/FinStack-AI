@@ -1,5 +1,5 @@
 import React from 'react';
-import '../styles/smartfeed.css';
+import "../../styles/smartfeed.css";
 
 /**
  * SmartFeedModal
