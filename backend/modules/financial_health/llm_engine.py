@@ -48,7 +48,7 @@ class LLMEngine:
         strengths: list[str],
         weaknesses: list[str],
         risks: list[str],
-        recommendations: list[str],
+        recommendations: list[dict],
     ) -> str | None:
         """
         Generates an AI-powered financial summary.

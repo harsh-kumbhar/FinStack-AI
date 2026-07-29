@@ -18,60 +18,76 @@ class PromptBuilder:
         strengths: list[str],
         weaknesses: list[str],
         risks: list[str],
-        recommendations: list[str],
+        recommendations: list[dict],
     ):
 
+        recommendation_text = "\n".join(
+            f"- {rec['title']} ({rec['priority']} Priority)\n"
+            f"  Reason: {rec['reason']}\n"
+            f"  Recommended: {rec['recommended_value']}"
+            for rec in recommendations
+        )
+
         return f"""
-You are a certified financial advisor.
+    You are an experienced Certified Financial Advisor.
 
-Analyze the following financial profile.
+    Analyze the following financial report.
 
-----------------------------------------------------
+    ----------------------------------------------------
 
-Financial Persona:
-{persona}
+    Financial Persona:
+    {persona}
 
-Financial Health Score:
-{score:.2f}
+    ML Financial Health Score:
+    {score:.2f}/100
 
-Health Status:
-{health_status}
+    Overall Health Status:
+    {health_status}
 
-Strengths:
-{chr(10).join("- " + s for s in strengths)}
+    Strengths:
+    {chr(10).join("- " + s for s in strengths)}
 
-Weaknesses:
-{chr(10).join("- " + w for w in weaknesses)}
+    Weaknesses:
+    {chr(10).join("- " + w for w in weaknesses)}
 
-Risks:
-{chr(10).join("- " + r for r in risks)}
+    Risks:
+    {chr(10).join("- " + r for r in risks)}
 
-Recommendations:
-{chr(10).join("- " + rec for rec in recommendations)}
+    Recommended Actions:
+    {recommendation_text}
 
-----------------------------------------------------
+    ----------------------------------------------------
 
-Instructions:
+    Instructions
 
-1. Write approximately 150-200 words.
+    1. Write a financial report between 180 and 220 words.
 
-2. Keep the language simple.
+    2. Use simple, professional English suitable for everyday users.
 
-3. Be professional and encouraging.
+    3. Explain why the user received this Financial Health Score.
 
-4. Explain WHY the score was received.
+    4. Mention strengths before weaknesses.
 
-5. Mention both strengths and weaknesses.
+    5. Mention financial risks ONLY if they are provided above.
+       If there are no risks, clearly state that no major financial
+       risks were identified.
 
-6. Explain the possible financial risks.
+    6. Explain ONLY the recommendations listed above.
+       Do NOT generate additional recommendations.
 
-7. Suggest practical improvements.
+    7. If the recommendation list is empty, encourage the user
+       to maintain their current financial habits.
 
-8. Never change the financial score.
+    8. Do NOT mention investments, taxes, inflation,
+       diversification, mutual funds, stock market,
+       insurance planning or any other financial topic
+       unless it is explicitly present in the information above.
 
-9. Never invent facts.
+    9. Never invent any financial information.
 
-10. Base every statement only on the provided information.
+    10. Never modify the Financial Health Score.
 
-Return only the report.
-"""
+    11. Base every statement ONLY on the information above.
+
+    Return only the financial report.
+    """

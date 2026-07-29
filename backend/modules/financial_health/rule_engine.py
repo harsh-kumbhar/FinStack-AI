@@ -1,136 +1,112 @@
-"""
-=========================================================
-Financial Rule Engine
----------------------------------------------------------
-Generates financial insights based on the predicted score
-and engineered financial features.
-=========================================================
-"""
-
-from modules.financial_health.schema import (
-    FinancialHealthFeatures,
-)
+from modules.financial_health.metrics_engine import MetricsEngine
+from modules.financial_health.config.thresholds import HEALTH_SCORE
 
 
 class RuleEngine:
 
     @staticmethod
-    def evaluate(
-        score: float,
-        features: FinancialHealthFeatures,
-    ):
+    def evaluate(score, features):
+
+        metrics = MetricsEngine.evaluate(features)
 
         strengths = []
         weaknesses = []
         risks = []
-        recommendations = []
 
-        # ==========================================
+        # =====================================================
         # Savings
-        # ==========================================
+        # =====================================================
 
-        if features.savings_rate >= 0.30:
-            strengths.append(
-                "Excellent monthly savings habit."
-            )
+        if metrics["savings_rate"]["severity"] == "success":
+            strengths.append("Excellent monthly savings habit.")
         else:
-            weaknesses.append(
-                "Savings rate is below the recommended 30%."
-            )
-            recommendations.append(
-                "Increase monthly savings gradually."
-            )
+            weaknesses.append("Savings rate is below the recommended level.")
 
-        # ==========================================
+        # =====================================================
         # Emergency Fund
-        # ==========================================
+        # =====================================================
 
-        if features.emergency_fund_months >= 6:
-            strengths.append(
-                "Healthy emergency fund maintained."
-            )
+        if metrics["emergency_fund"]["severity"] == "success":
+            strengths.append("Healthy emergency fund maintained.")
         else:
-            weaknesses.append(
-                "Emergency fund is insufficient."
+            weaknesses.append("Emergency fund is insufficient.")
+        if metrics["emergency_fund"]["severity"] == "danger":
+            risks.append(
+                "Limited emergency savings may create financial stress during unexpected situations."
             )
-            recommendations.append(
-                "Build an emergency fund covering at least six months of expenses."
-            )
-
-        # ==========================================
+        # =====================================================
         # Debt
-        # ==========================================
+        # =====================================================
 
-        if features.debt_to_income_ratio <= 0.30:
-            strengths.append(
-                "Debt level is well managed."
-            )
+        if metrics["debt_ratio"]["severity"] == "success":
+            strengths.append("Debt level is well managed.")
         else:
-            weaknesses.append(
-                "Debt burden is relatively high."
-            )
+            weaknesses.append("Debt burden is relatively high.")
             risks.append(
                 "High debt can affect future financial stability."
             )
-            recommendations.append(
-                "Prioritize repayment of high-interest debt."
-            )
 
-        # ==========================================
+        # =====================================================
         # Investments
-        # ==========================================
+        # =====================================================
 
-        if features.investment_ratio >= 0.50:
-            strengths.append(
-                "Good investment portfolio."
-            )
+        if metrics["investment_ratio"]["severity"] == "success":
+            strengths.append("Good investment portfolio.")
+        else:
+            weaknesses.append("Investment allocation is relatively low.")
+
+        # =====================================================
+        # Expense Ratio
+        # =====================================================
+
+        if metrics["expense_ratio"]["severity"] == "success":
+            strengths.append("Healthy monthly spending habits.")
         else:
             weaknesses.append(
-                "Investment allocation is relatively low."
-            )
-            recommendations.append(
-                "Increase long-term investments gradually."
+                "Monthly expenses consume a large portion of your income."
             )
 
-        # ==========================================
+        if metrics["expense_ratio"]["severity"] == "danger":
+            risks.append(
+                "High monthly expenses reduce your ability to save and invest."
+            )
+        # =====================================================
         # Cashflow
-        # ==========================================
+        # =====================================================
 
-        if features.net_monthly_cashflow >= 0:
-            strengths.append(
-                "Positive monthly cash flow."
-            )
+        if metrics["cashflow"]["severity"] == "success":
+            strengths.append("Positive monthly cash flow.")
         else:
-            weaknesses.append(
-                "Negative monthly cash flow."
-            )
+            weaknesses.append("Negative monthly cash flow.")
             risks.append(
                 "Persistent negative cash flow may lead to debt."
             )
-            recommendations.append(
-                "Reduce discretionary spending."
-            )
 
-        # ==========================================
-        # Overall Score
-        # ==========================================
+        # =====================================================
+        # Overall Status
+        # =====================================================
 
-        if score >= 80:
+        if score >= HEALTH_SCORE["excellent"]:
             status = "Excellent"
 
-        elif score >= 60:
+        elif score >= HEALTH_SCORE["good"]:
             status = "Good"
 
-        elif score >= 40:
+        elif score >= HEALTH_SCORE["average"]:
             status = "Average"
 
         else:
             status = "Poor"
 
         return {
+
             "health_status": status,
+
+            "metrics": metrics,
+
             "strengths": strengths,
+
             "weaknesses": weaknesses,
+
             "risks": risks,
-            "recommendations": recommendations,
         }
