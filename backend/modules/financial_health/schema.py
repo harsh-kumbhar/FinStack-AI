@@ -1,13 +1,15 @@
-from pydantic import BaseModel, Field
-from typing import Optional
 from datetime import datetime
+from typing import List, Optional, Dict
+
+from pydantic import BaseModel, Field
 
 
 # ==========================================================
-# Raw Financial Profile (Fetched from Supabase)
+# Raw Financial Profile
 # ==========================================================
 
 class FinancialProfileData(BaseModel):
+
     age: int = Field(..., ge=18, le=100)
 
     employment_status: str
@@ -31,7 +33,6 @@ class FinancialProfileData(BaseModel):
 
 # ==========================================================
 # Engineered Features
-# (Generated from FinancialProfileData)
 # ==========================================================
 
 class FinancialHealthFeatures(BaseModel):
@@ -54,7 +55,68 @@ class FinancialHealthFeatures(BaseModel):
 
 
 # ==========================================================
-# ML Prediction Result
+# Financial Metric
+# ==========================================================
+
+class FinancialMetric(BaseModel):
+
+    name: str
+
+    value: float | int
+
+    unit: str
+
+    status: str
+
+    severity: str
+
+    recommended: str
+
+    description: str
+
+
+# ==========================================================
+# Recommendation
+# ==========================================================
+
+class Recommendation(BaseModel):
+
+    id: str
+
+    title: str
+
+    priority: str
+
+    current_value: str
+
+    recommended_value: str
+
+    reason: str
+
+    impact: str
+
+
+# ==========================================================
+# Persona
+# ==========================================================
+
+class FinancialPersona(BaseModel):
+
+    title: str
+
+    emoji: str
+
+    description: str
+
+    strength: str
+
+    focus_area: str
+
+    risk_level: str
+
+
+# ==========================================================
+# Prediction Result
 # ==========================================================
 
 class PredictionResult(BaseModel):
@@ -67,18 +129,25 @@ class PredictionResult(BaseModel):
 
     model_version: str
 
-    strengths: list[str]
+    metrics: Dict[str, FinancialMetric]
 
-    weaknesses: list[str]
+    score_breakdown: Dict[str, int]
 
-    risks: list[str]
+    persona: FinancialPersona
 
-    recommendations: list[str]
+    strengths: List[str]
 
-    ai_summary: str | None = None
+    weaknesses: List[str]
+
+    risks: List[str]
+
+    recommendations: List[Recommendation]
+
+    ai_summary: Optional[str] = None
+
 
 # ==========================================================
-# Final Financial Health Report
+# Final Financial Report
 # ==========================================================
 
 class FinancialHealthReport(BaseModel):
@@ -89,17 +158,20 @@ class FinancialHealthReport(BaseModel):
 
     ai_summary: Optional[str] = None
 
-    strengths: list[str] = []
+    strengths: List[str] = []
 
-    weaknesses: list[str] = []
+    weaknesses: List[str] = []
 
-    risks: list[str] = []
+    risks: List[str] = []
 
-    recommendations: list[str] = []
+    recommendations: List[Recommendation] = []
 
-    next_steps: list[str] = []
+    next_steps: List[str] = []
 
 
+# ==========================================================
+# History
+# ==========================================================
 
 class HistoryReport(BaseModel):
 
@@ -115,9 +187,9 @@ class HistoryReport(BaseModel):
 
     health_status: str
 
-    ai_summary: str | None = None
+    ai_summary: Optional[str] = None
 
 
 class HistoryReportList(BaseModel):
 
-    reports: list[HistoryReport]
+    reports: List[HistoryReport]

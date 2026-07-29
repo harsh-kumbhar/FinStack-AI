@@ -34,9 +34,9 @@ def predict_financial_health(
     saved_report = HistoryService.save_report(
     user_id=user.id,
     prediction={
-        "ml_health_score": result["score"],
-        "final_health_score": result["score"],
-        "rule_health_score": result["score"],
+        "ml_health_score": result["ml_health_score"],
+        "final_health_score": result["ml_health_score"],
+        "rule_health_score": result["ml_health_score"],
         "health_status": result["health_status"],
         "strengths": result["strengths"],
         "weaknesses": result["weaknesses"],
@@ -50,7 +50,7 @@ def predict_financial_health(
     return PredictionResult(
     report_id=saved_report["id"],
 
-    ml_health_score=result["score"],
+    ml_health_score=result["ml_health_score"],
 
     health_status=result["health_status"],
 
@@ -63,6 +63,12 @@ def predict_financial_health(
     risks=result["risks"],
 
     recommendations=result["recommendations"],
+
+    metrics=result["metrics"],
+    
+    score_breakdown=result["score_breakdown"],
+
+    persona=result["persona"],  
 
     ai_summary=result["ai_summary"],
 )
