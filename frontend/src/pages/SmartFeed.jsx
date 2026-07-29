@@ -4,6 +4,7 @@ import { smartfeedService } from '../services/smartfeedService';
 import FeedCard from '../components/smartfeed/FeedCard';
 import FeedEmptyState from '../components/smartfeed/FeedEmptyState';
 import { FeedSkeletonGrid } from '../components/smartfeed/FeedCardSkeleton';
+import SmartFeedModal from '../components/smartfeed/SmartFeedModal';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/smartfeed.css';
 
@@ -101,6 +102,7 @@ export default function SmartFeed() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('feed'); // 'feed' | 'bookmarks'
     const [error, setError] = useState(null);
+    const [selectedArticle, setSelectedArticle] = useState(null);
 
     // ── Load initial data ──
     useEffect(() => {
@@ -348,6 +350,7 @@ export default function SmartFeed() {
                                     key={article.id}
                                     article={{ ...article, bookmarked: article.bookmarked || bookmarkedIds.has(article.id) }}
                                     onBookmark={handleBookmarkToggle}
+                                    onRead={setSelectedArticle}
                                 />
                             ))}
                         </div>
@@ -355,6 +358,14 @@ export default function SmartFeed() {
 
                 </div>
             </main>
+
+            {/* Read Modal */}
+            {selectedArticle && (
+                <SmartFeedModal
+                    article={selectedArticle}
+                    onClose={() => setSelectedArticle(null)}
+                />
+            )}
         </div>
     );
 }

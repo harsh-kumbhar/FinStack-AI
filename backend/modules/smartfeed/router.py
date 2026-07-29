@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from typing import Optional
 from common.database import get_current_user
 from modules.smartfeed.service import SmartFeedService
 from modules.smartfeed.schema import FeedResponse, BookmarkRequest, BookmarkResponse
@@ -9,8 +10,16 @@ router = APIRouter(
 )
 
 @router.get("/feed", response_model=FeedResponse)
-def get_feed(user=Depends(get_current_user)):
-    return SmartFeedService.get_personalized_feed()
+def get_feed(category: Optional[str] = Query(None), user=Depends(get_current_user)):
+    return SmartFeedService.get_personalized_feed(category=category)
+
+@router.get("/trending")
+def get_trending(user=Depends(get_current_user)):
+    return SmartFeedService.get_trending()
+
+@router.get("/search", response_model=FeedResponse)
+def search_articles(q: Optional[str] = Query(None), user=Depends(get_current_user)):
+    return SmartFeedService.get_personalized_feed(search=q)
 
 @router.get("/dashboard-widgets")
 def get_dashboard_widgets(user=Depends(get_current_user)):
@@ -19,8 +28,6 @@ def get_dashboard_widgets(user=Depends(get_current_user)):
 @router.post("/bookmark", response_model=BookmarkResponse)
 def bookmark_article(request: BookmarkRequest, user=Depends(get_current_user)):
     try:
-        # Assuming user.id maps to user_profile_id. 
-        # In a real scenario, you might need to query `user_profile` to get the UUID.
         result = SmartFeedService.bookmark_article(user.id, request.article_id)
         return result
     except Exception as e:
@@ -29,3 +36,14 @@ def bookmark_article(request: BookmarkRequest, user=Depends(get_current_user)):
 @router.get("/bookmarks", response_model=FeedResponse)
 def get_bookmarks(user=Depends(get_current_user)):
     return SmartFeedService.get_bookmarks(user.id)
+
+@router.delete("/bookmark/{bookmark_id}")
+def remove_bookmark(bookmark_id: str, user=Depends(get_current_user)):
+    try:
+        return SmartFeedService.remove_bookmark(user.id, bookmark_id)
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.get("/categories")
+def get_categories():
+    return SmartFeedService.get_categories()
