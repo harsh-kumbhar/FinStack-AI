@@ -1,19 +1,11 @@
+// --- src/services/smartfeedService.js ---
 import axios from 'axios';
 import { supabase } from './supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-/**
- * SmartFeed Service
- * All API calls for the SmartFeed module are centralized here.
- * Follows the same pattern as financialHealthService.js
- */
 export const smartfeedService = {
 
-    /**
-     * Get authenticated headers for API requests.
-     * @returns {Promise<Object>} axios headers config
-     */
     async getAuthHeaders() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.access_token) {
@@ -22,12 +14,6 @@ export const smartfeedService = {
         return {};
     },
 
-    /**
-     * Fetch the personalized SmartFeed.
-     * Falls back to mock data if backend is unavailable.
-     * @param {Object} params - { category, sort, page, limit }
-     * @returns {Promise<Object>}
-     */
     async getFeed(params = {}) {
         try {
             const headers = await this.getAuthHeaders();
@@ -42,10 +28,6 @@ export const smartfeedService = {
         }
     },
 
-    /**
-     * Fetch trending articles.
-     * @returns {Promise<Array>}
-     */
     async getTrending() {
         try {
             const headers = await this.getAuthHeaders();
@@ -57,10 +39,6 @@ export const smartfeedService = {
         }
     },
 
-    /**
-     * Fetch all available categories.
-     * @returns {Promise<Array>}
-     */
     async getCategories() {
         try {
             const headers = await this.getAuthHeaders();
@@ -72,10 +50,6 @@ export const smartfeedService = {
         }
     },
 
-    /**
-     * Fetch user's bookmarked articles.
-     * @returns {Promise<Array>}
-     */
     async getBookmarks() {
         try {
             const headers = await this.getAuthHeaders();
@@ -87,11 +61,6 @@ export const smartfeedService = {
         }
     },
 
-    /**
-     * Add an article to bookmarks.
-     * @param {string} articleId
-     * @returns {Promise<Object>}
-     */
     async addBookmark(articleId) {
         try {
             const headers = await this.getAuthHeaders();
@@ -107,11 +76,6 @@ export const smartfeedService = {
         }
     },
 
-    /**
-     * Remove an article from bookmarks.
-     * @param {string} articleId
-     * @returns {Promise<Object>}
-     */
     async removeBookmark(articleId) {
         try {
             const headers = await this.getAuthHeaders();
@@ -126,11 +90,6 @@ export const smartfeedService = {
         }
     },
 
-    /**
-     * Search articles by keyword.
-     * @param {string} query
-     * @returns {Promise<Array>}
-     */
     async searchArticles(query) {
         try {
             const headers = await this.getAuthHeaders();
@@ -188,7 +147,8 @@ export const smartfeedService = {
                 type: 'news',
                 category: 'markets',
                 title: 'NIFTY 50 Closes at Record High — What It Means for Your Portfolio',
-                summary: 'The NIFTY 50 index reached an all-time high of 25,800 today, driven by strong FII buying in banking and IT sectors. Analysts suggest that mid-cap funds are poised to outperform in the next quarter.',
+                summary: 'The NIFTY 50 index reached an all-time high of 25,800 today, driven by strong FII buying in banking and IT sectors.',
+                content: 'Analysts suggest that mid-cap funds are poised to outperform in the next quarter as market breadth continues to expand. FIIs injected over ₹4,500 crore in today\'s trading session alone, signaling strong global confidence in the Indian macroeconomic landscape.',
                 source: 'Economic Times',
                 published_at: '2026-07-29T07:00:00Z',
                 read_time: 4,
@@ -203,7 +163,8 @@ export const smartfeedService = {
                 type: 'scheme',
                 category: 'schemes',
                 title: 'PM Kisan Vikas Patra 2.0 — Earn 7.5% Guaranteed Returns',
-                summary: 'The government relaunched Kisan Vikas Patra with a revised 7.5% annual return guaranteed by the Government of India. Minimum investment is ₹1,000 with no upper limit.',
+                summary: 'The government relaunched Kisan Vikas Patra with a revised 7.5% annual return guaranteed by the Government of India.',
+                content: 'Minimum investment is ₹1,000 with no upper limit. The maturity period has been optimized to 115 months, effectively doubling your investment. This makes it a highly secure instrument for conservative portfolios.',
                 source: 'Ministry of Finance',
                 published_at: '2026-07-28T10:00:00Z',
                 read_time: 3,
@@ -218,7 +179,8 @@ export const smartfeedService = {
                 type: 'news',
                 category: 'tax',
                 title: 'Budget 2026 Tax Relief: New Slabs Explained Simply',
-                summary: 'Finance Minister announced a revised new tax regime with zero tax up to ₹7.5 lakh annual income, and simplified slabs thereafter. Here is a complete breakdown for salaried employees.',
+                summary: 'Finance Minister announced a revised new tax regime with zero tax up to ₹7.5 lakh annual income, and simplified slabs thereafter.',
+                content: 'Here is a complete breakdown for salaried employees: Incomes between ₹7.5L to ₹10L will be taxed at 10%, while incomes above ₹15L remain at the 30% bracket. Standard deduction has also been marginally increased to ₹75,000 to further ease the burden on middle-class taxpayers.',
                 source: 'NDTV Profit',
                 published_at: '2026-07-27T14:30:00Z',
                 read_time: 6,
@@ -233,7 +195,8 @@ export const smartfeedService = {
                 type: 'ai_pick',
                 category: 'ai_picks',
                 title: 'AI Insight: 3 Index Funds Matching Your Risk Profile',
-                summary: 'Based on your financial profile and moderate-aggressive risk tolerance, our AI engine identified 3 NIFTY index funds with optimal expense ratios and consistent 5-year CAGR above 14%.',
+                summary: 'Based on your financial profile and moderate-aggressive risk tolerance, our AI engine identified 3 NIFTY index funds.',
+                content: 'These funds feature optimal expense ratios (below 0.2%) and consistent 5-year CAGR above 14%. By shifting your current surplus liquidity into these specific passive instruments, you could potentially reduce your retirement timeline by 2.4 years.',
                 source: 'FinStack AI Engine',
                 published_at: '2026-07-29T08:00:00Z',
                 read_time: 5,
@@ -248,7 +211,8 @@ export const smartfeedService = {
                 type: 'news',
                 category: 'banking',
                 title: 'RBI Repo Rate Unchanged at 6.5% — Impact on EMIs and FDs',
-                summary: 'The Reserve Bank of India Monetary Policy Committee voted unanimously to keep the repo rate at 6.5%. This decision will keep home loan and car loan EMIs stable while FD rates remain attractive.',
+                summary: 'The Reserve Bank of India Monetary Policy Committee voted unanimously to keep the repo rate at 6.5%.',
+                content: 'This decision will keep home loan and car loan EMIs stable while FD rates remain attractive. Governor Das emphasized that inflation remains closely monitored, but current growth metrics allow the central bank to maintain the status quo without risking economic overheating.',
                 source: 'Mint',
                 published_at: '2026-07-28T16:00:00Z',
                 read_time: 4,
@@ -263,7 +227,8 @@ export const smartfeedService = {
                 type: 'scheme',
                 category: 'schemes',
                 title: 'Sukanya Samriddhi Yojana: Why Parents of Girl Children Should Invest Now',
-                summary: 'SSY currently offers 8.2% annual interest — the highest among all small savings schemes. With Section 80C benefits and tax-free maturity, it remains the gold standard for parents planning their daughter\'s future.',
+                summary: 'SSY currently offers 8.2% annual interest — the highest among all small savings schemes.',
+                content: 'With Section 80C benefits and tax-free maturity, it remains the gold standard for parents planning their daughter\'s future. Accounts can be opened with just ₹250, and deposits can be made until the child reaches 15 years of age.',
                 source: 'India Today',
                 published_at: '2026-07-26T09:00:00Z',
                 read_time: 5,
@@ -278,7 +243,8 @@ export const smartfeedService = {
                 type: 'news',
                 category: 'investment',
                 title: 'SIP Investments Cross ₹20,000 Crore Monthly — What This Means',
-                summary: 'Monthly SIP contributions in India crossed the ₹20,000 crore milestone for the first time, indicating growing financial discipline among retail investors. SEBI attributes this to expanded digital access.',
+                summary: 'Monthly SIP contributions in India crossed the ₹20,000 crore milestone for the first time, indicating growing financial discipline.',
+                content: 'SEBI attributes this to expanded digital access and increased financial literacy across Tier 2 and Tier 3 cities. This sticky domestic capital is providing unprecedented stability to Indian markets against global volatility.',
                 source: 'Business Standard',
                 published_at: '2026-07-25T11:00:00Z',
                 read_time: 3,
@@ -293,7 +259,8 @@ export const smartfeedService = {
                 type: 'news',
                 category: 'insurance',
                 title: 'Term Life Insurance: Why ₹1 Crore Cover Costs Less Than ₹1,000/Month',
-                summary: 'A detailed comparison of top 5 term insurance plans shows that a ₹1 crore cover for a 28-year-old non-smoker costs just ₹700-900/month. Financial planners say term insurance remains the most underutilized safety net.',
+                summary: 'A detailed comparison of top 5 term insurance plans shows that a ₹1 crore cover for a 28-year-old non-smoker costs just ₹700-900/month.',
+                content: 'Financial planners say term insurance remains the most underutilized safety net. Locking in a premium in your late 20s ensures that your rates never increase for the duration of the policy, providing massive leverage against unforeseen tragedies.',
                 source: 'The Hindu Business Line',
                 published_at: '2026-07-24T10:00:00Z',
                 read_time: 6,

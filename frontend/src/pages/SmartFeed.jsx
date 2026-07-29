@@ -1,14 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { smartfeedService } from '../services/smartfeedService';
-import FeedCard from '../components/smartfeed/FeedCard';
 import FeedEmptyState from '../components/smartfeed/FeedEmptyState';
 import { FeedSkeletonGrid } from '../components/smartfeed/FeedCardSkeleton';
-import SmartFeedModal from '../components/smartfeed/SmartFeedModal';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/smartfeed.css';
 
-// Sidebar nav items (identical structure to Dashboard.jsx)
 const SIDEBAR_ITEMS = [
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Financial Health Analyzer', path: '/health-analyzer' },
@@ -20,7 +17,19 @@ const SIDEBAR_ITEMS = [
     { label: 'Settings', soon: true },
 ];
 
-// Inline styles — matching the exact object pattern used in Dashboard.jsx
+// Dynamic emojis to attract attention to headlines
+const categoryEmojis = {
+    markets: '📈',
+    schemes: '🏛️',
+    tax: '🧾',
+    investment: '💼',
+    banking: '🏦',
+    insurance: '🛡️',
+    ai_picks: '🤖',
+    general: '📰',
+    all: '🔥'
+};
+
 const styles = {
     layout: {
         display: 'flex',
@@ -78,38 +87,172 @@ const styles = {
         borderRadius: 'var(--radius-sm)',
         fontWeight: '600',
         cursor: 'pointer'
+    },
+    card: {
+        backgroundColor: 'var(--white)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '24px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        boxShadow: 'var(--shadow-sm)',
+        transition: 'var(--transition)',
+        cursor: 'pointer',
+        height: '100%'
+    },
+    cardHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '12px'
+    },
+    cardTag: {
+        fontSize: '11px',
+        fontWeight: 'bold',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        textTransform: 'uppercase'
+    },
+    cardTitle: {
+        fontSize: '18px',
+        fontWeight: 'bold',
+        color: 'var(--navy)',
+        marginBottom: '8px',
+        lineHeight: '1.4',
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden'
+    },
+    cardSummary: {
+        fontSize: '14px',
+        color: 'var(--text2)',
+        lineHeight: '1.5',
+        display: '-webkit-box',
+        WebkitLineClamp: 1, // Truncates strictly to 1 line
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+        marginBottom: '16px'
+    },
+    cardFooter: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderTop: '1px solid var(--border)',
+        paddingTop: '16px',
+        marginTop: 'auto'
+    },
+    cardMeta: {
+        fontSize: '12px',
+        color: 'var(--text3)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+    },
+    readBtn: {
+        color: 'var(--navy2)',
+        fontWeight: '600',
+        fontSize: '13px',
+        backgroundColor: 'transparent',
+        border: 'none',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px'
+    },
+    modalOverlay: {
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0, 35, 80, 0.6)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+        padding: '24px'
+    },
+    modalContent: {
+        backgroundColor: 'var(--white)',
+        width: '100%',
+        maxWidth: '800px',
+        maxHeight: '90vh',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-md)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden'
+    },
+    modalHeader: {
+        padding: '32px 32px 24px 32px',
+        borderBottom: '1px solid var(--border)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        backgroundColor: 'var(--white)'
+    },
+    modalTitle: {
+        fontSize: '28px',
+        fontWeight: 'bold',
+        color: 'var(--navy)',
+        fontFamily: "'Noto Serif', Georgia, serif",
+        lineHeight: '1.4',
+        marginBottom: '12px'
+    },
+    modalBody: {
+        padding: '32px',
+        overflowY: 'auto',
+        flex: 1,
+        backgroundColor: 'var(--bg)'
+    },
+    aiSummaryBox: {
+        backgroundColor: 'var(--white)',
+        border: '1px solid var(--border)',
+        borderLeft: '4px solid var(--info)',
+        padding: '20px',
+        borderRadius: 'var(--radius-md)',
+        marginBottom: '24px',
+        display: 'flex',
+        gap: '16px',
+        alignItems: 'flex-start',
+        boxShadow: 'var(--shadow-sm)'
+    },
+    closeBtn: {
+        background: 'var(--bg2)',
+        border: 'none',
+        width: '36px',
+        height: '36px',
+        borderRadius: '50%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: '20px',
+        color: 'var(--text2)',
+        cursor: 'pointer',
+        lineHeight: 1
     }
 };
 
-/**
- * SmartFeed Page
- * Main SmartFeed page with categories, search, trending, and article feed.
- * Follows the exact architecture of Dashboard.jsx and FinancialHealthAnalyzer.jsx
- */
 export default function SmartFeed() {
     const navigate = useNavigate();
     const { logout } = useAuth();
 
-    // Feed state
     const [articles, setArticles] = useState([]);
     const [trending, setTrending] = useState([]);
     const [categories, setCategories] = useState([]);
     const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
 
-    // UI state
+    const [selectedArticle, setSelectedArticle] = useState(null);
+
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeTab, setActiveTab] = useState('feed'); // 'feed' | 'bookmarks'
+    const [activeTab, setActiveTab] = useState('feed');
     const [error, setError] = useState(null);
-    const [selectedArticle, setSelectedArticle] = useState(null);
 
-    // ── Load initial data ──
     useEffect(() => {
         loadInitialData();
     }, []);
 
-    // ── Reload feed when category changes ──
     useEffect(() => {
         if (!loading) loadFeed(activeCategory);
     }, [activeCategory]);
@@ -127,7 +270,6 @@ export default function SmartFeed() {
             setTrending(trendingData || []);
             setCategories(categoriesData || []);
         } catch (err) {
-            console.error('SmartFeed: loadInitialData error', err);
             setError('Failed to load SmartFeed. Using fallback data.');
         } finally {
             setLoading(false);
@@ -146,7 +288,6 @@ export default function SmartFeed() {
         }
     }
 
-    // ── Search Handler ──
     const handleSearch = useCallback(async (query) => {
         setSearchQuery(query);
         if (!query.trim()) {
@@ -164,7 +305,6 @@ export default function SmartFeed() {
         }
     }, [activeCategory]);
 
-    // ── Debounced search ──
     useEffect(() => {
         const timer = setTimeout(() => {
             if (searchQuery !== '') handleSearch(searchQuery);
@@ -172,8 +312,8 @@ export default function SmartFeed() {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    // ── Bookmark Toggle ──
-    async function handleBookmarkToggle(articleId, isBookmarking) {
+    async function handleBookmarkToggle(e, articleId, isBookmarking) {
+        e.stopPropagation();
         setBookmarkedIds(prev => {
             const next = new Set(prev);
             isBookmarking ? next.add(articleId) : next.delete(articleId);
@@ -189,14 +329,12 @@ export default function SmartFeed() {
         }
     }
 
-    // ── Reset Filters ──
     function handleReset() {
         setSearchQuery('');
         setActiveCategory('all');
         loadFeed('all');
     }
 
-    // ── Bookmarked articles ──
     const bookmarkedArticles = articles.filter(a => a.bookmarked || bookmarkedIds.has(a.id));
     const displayArticles = activeTab === 'bookmarks' ? bookmarkedArticles : articles;
 
@@ -206,8 +344,7 @@ export default function SmartFeed() {
 
     return (
         <div style={styles.layout}>
-
-            {/* ── SIDEBAR ── */}
+            {/* SIDEBAR */}
             <aside style={styles.sidebar}>
                 <div style={styles.sidebarHeader}>FinStack</div>
                 <nav style={styles.sidebarNav}>
@@ -229,10 +366,8 @@ export default function SmartFeed() {
                 </div>
             </aside>
 
-            {/* ── MAIN AREA ── */}
+            {/* MAIN AREA */}
             <main className="sf-main">
-
-                {/* Top Bar */}
                 <header className="sf-topbar">
                     <div style={{ fontWeight: '600', color: 'var(--navy)', fontSize: '15px' }}>
                         📰 SmartFeed
@@ -243,10 +378,7 @@ export default function SmartFeed() {
                     </div>
                 </header>
 
-                {/* Page Content */}
                 <div className="sf-content">
-
-                    {/* Page Header + Search */}
                     <div className="sf-page-header">
                         <div>
                             <h1 className="sf-page-title">SmartFeed</h1>
@@ -263,29 +395,20 @@ export default function SmartFeed() {
                                 placeholder="Search articles, topics..."
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                aria-label="Search SmartFeed articles"
                             />
                         </div>
                     </div>
 
-                    {/* Error Banner */}
-                    {error && (
-                        <div className="sf-error">
-                            ⚠️ {error}
-                        </div>
-                    )}
+                    {error && <div className="sf-error">⚠️ {error}</div>}
 
-                    {/* Tabs */}
                     <div className="sf-tabs">
                         <button
-                            id="tab-feed"
                             className={`sf-tab ${activeTab === 'feed' ? 'active' : ''}`}
                             onClick={() => setActiveTab('feed')}
                         >
                             📰 Feed
                         </button>
                         <button
-                            id="tab-bookmarks"
                             className={`sf-tab ${activeTab === 'bookmarks' ? 'active' : ''}`}
                             onClick={() => setActiveTab('bookmarks')}
                         >
@@ -293,13 +416,11 @@ export default function SmartFeed() {
                         </button>
                     </div>
 
-                    {/* Categories */}
                     {activeTab === 'feed' && (
                         <div className="sf-categories">
                             {categories.map(cat => (
                                 <button
                                     key={cat.id}
-                                    id={`cat-${cat.id}`}
                                     className={`sf-cat-btn ${activeCategory === cat.id ? 'active' : ''}`}
                                     onClick={() => {
                                         setActiveCategory(cat.id);
@@ -312,12 +433,9 @@ export default function SmartFeed() {
                         </div>
                     )}
 
-                    {/* Trending Strip */}
                     {activeTab === 'feed' && !searchQuery && trending.length > 0 && (
                         <div className="sf-trending-strip">
-                            <div className="sf-trending-label">
-                                🔥 Trending Now
-                            </div>
+                            <div className="sf-trending-label">🔥 Trending Now</div>
                             <div className="sf-trending-items">
                                 {trending.map(item => (
                                     <div
@@ -332,39 +450,133 @@ export default function SmartFeed() {
                         </div>
                     )}
 
-                    {/* Articles Section */}
+                    {/* ARTICLE GRID */}
                     {activeTab === 'bookmarks' && bookmarkedArticles.length === 0 ? (
                         <FeedEmptyState type="bookmarks" />
                     ) : loading ? (
                         <FeedSkeletonGrid count={6} />
                     ) : displayArticles.length === 0 ? (
-                        <FeedEmptyState
-                            type="no-results"
-                            query={searchQuery}
-                            onReset={handleReset}
-                        />
+                        <FeedEmptyState type="no-results" query={searchQuery} onReset={handleReset} />
                     ) : (
-                        <div className="sf-grid">
-                            {displayArticles.map(article => (
-                                <FeedCard
-                                    key={article.id}
-                                    article={{ ...article, bookmarked: article.bookmarked || bookmarkedIds.has(article.id) }}
-                                    onBookmark={handleBookmarkToggle}
-                                    onRead={setSelectedArticle}
-                                />
-                            ))}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
+                            {displayArticles.map(article => {
+                                const isBookmarked = article.bookmarked || bookmarkedIds.has(article.id);
+                                const catEmoji = categoryEmojis[article.category] || categoryEmojis.general;
+
+                                return (
+                                    <div
+                                        key={article.id}
+                                        style={styles.card}
+                                        onMouseEnter={(e) => e.currentTarget.style.boxShadow = 'var(--shadow)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.boxShadow = 'var(--shadow-sm)'}
+                                        onClick={() => setSelectedArticle(article)}
+                                    >
+                                        <div>
+                                            <div style={styles.cardHeader}>
+                                                <span style={{ ...styles.cardTag, backgroundColor: `${article.tag_color}15`, color: article.tag_color }}>
+                                                    {article.tag}
+                                                </span>
+                                                <button
+                                                    onClick={(e) => handleBookmarkToggle(e, article.id, !isBookmarked)}
+                                                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px' }}
+                                                >
+                                                    {isBookmarked ? '🔖' : '📑'}
+                                                </button>
+                                            </div>
+                                            <h3 style={styles.cardTitle}>{catEmoji} {article.title}</h3>
+                                            <p style={styles.cardSummary}>{article.summary}</p>
+                                        </div>
+
+                                        <div style={styles.cardFooter}>
+                                            <div style={styles.cardMeta}>
+                                                <span>{article.source}</span>
+                                                <span>•</span>
+                                                <span>{article.read_time} min read</span>
+                                            </div>
+                                            <button style={styles.readBtn} onClick={(e) => { e.stopPropagation(); setSelectedArticle(article); }}>
+                                                Read More →
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     )}
-
                 </div>
             </main>
 
-            {/* Read Modal */}
+            {/* ENHANCED READ MORE MODAL */}
             {selectedArticle && (
-                <SmartFeedModal
-                    article={selectedArticle}
-                    onClose={() => setSelectedArticle(null)}
-                />
+                <div style={styles.modalOverlay} onClick={() => setSelectedArticle(null)}>
+                    <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+                        <div style={styles.modalHeader}>
+                            <div style={{ paddingRight: '24px' }}>
+                                <span style={{ ...styles.cardTag, backgroundColor: `${selectedArticle.tag_color}15`, color: selectedArticle.tag_color, display: 'inline-block', marginBottom: '16px' }}>
+                                    {selectedArticle.tag}
+                                </span>
+                                <h2 style={styles.modalTitle}>
+                                    {categoryEmojis[selectedArticle.category] || categoryEmojis.general} {selectedArticle.title}
+                                </h2>
+                                <div style={styles.cardMeta}>
+                                    <span>{selectedArticle.source}</span>
+                                    <span>•</span>
+                                    <span>{selectedArticle.published_at ? new Date(selectedArticle.published_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' }) : 'Recent'}</span>
+                                    <span>•</span>
+                                    <span>{selectedArticle.read_time} min read</span>
+                                </div>
+                            </div>
+                            <button style={styles.closeBtn} onClick={() => setSelectedArticle(null)}>✕</button>
+                        </div>
+
+                        <div style={styles.modalBody}>
+                            {selectedArticle.ai_summary && (
+                                <div style={styles.aiSummaryBox}>
+                                    <span style={{ fontSize: '28px' }}>🤖</span>
+                                    <div>
+                                        <h4 style={{ color: 'var(--info)', marginBottom: '8px', fontSize: '15px', fontWeight: 'bold' }}>FinStack AI Insight</h4>
+                                        <p style={{ color: 'var(--text)', fontSize: '15px', lineHeight: '1.6' }}>{selectedArticle.ai_summary}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Uses the database 'content' column to display full article text */}
+                            <div style={{ color: 'var(--text)', fontSize: '16px', lineHeight: '1.8' }}>
+                                <p style={{ marginBottom: '24px', fontWeight: '600', fontSize: '18px', color: 'var(--navy)' }}>
+                                    {selectedArticle.summary}
+                                </p>
+
+                                {selectedArticle.content ? (
+                                    <>
+                                        <p>
+                                            {selectedArticle.content.replace(/\[\+\d+\s+chars\]/g, '')}
+                                        </p>
+                                        {/* Add this button to link out to the full article */}
+                                        {selectedArticle.url && (
+                                            <a
+                                                href={selectedArticle.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{
+                                                    display: 'inline-block',
+                                                    marginTop: '16px',
+                                                    color: 'var(--navy2)',
+                                                    fontWeight: 'bold',
+                                                    textDecoration: 'underline'
+                                                }}
+                                            >
+                                                Read Full Article on {selectedArticle.source} ↗
+                                            </a>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p style={{ fontStyle: 'italic', color: 'var(--text3)' }}>
+                                        Full content not available for this article. Please view the source.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );
