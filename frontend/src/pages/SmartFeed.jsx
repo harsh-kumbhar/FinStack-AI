@@ -346,7 +346,7 @@ export default function SmartFeed() {
         <div style={styles.layout}>
             {/* SIDEBAR */}
             <aside style={styles.sidebar}>
-                <div style={styles.sidebarHeader}>FinStack</div>
+                <div style={styles.sidebarHeader} onClick={() => navigate('/dashboard')}>FinStack</div>
                 <nav style={styles.sidebarNav}>
                     {SIDEBAR_ITEMS.map((item, idx) => (
                         <div
