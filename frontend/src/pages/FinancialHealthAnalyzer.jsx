@@ -125,12 +125,17 @@ const styles = {
         marginBottom: '28px'
     },
     sectionTitle: {
-        fontSize: '16px',
-        color: 'var(--navy2)',
+        fontSize: '15px',
+        color: 'var(--navy)',
         fontWeight: 'bold',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px',
         margin: '24px 0 16px 0',
         paddingBottom: '8px',
-        borderBottom: '1px solid var(--border)'
+        borderBottom: '2px solid var(--border)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
     },
     grid2: {
         display: 'grid',
@@ -140,19 +145,22 @@ const styles = {
     formGroup: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px',
+        gap: '4px',
         marginBottom: '16px'
     },
     label: {
         fontSize: '13px',
         fontWeight: '600',
-        color: 'var(--text)'
+        color: 'var(--text)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px'
     },
     input: {
         padding: '10px 14px',
         borderRadius: 'var(--radius-sm)',
         border: '1px solid var(--border)',
-        backgroundColor: 'var(--bg)',
+        backgroundColor: 'var(--white)',
         color: 'var(--text)',
         fontSize: '14px',
         transition: 'var(--transition)'
@@ -161,14 +169,20 @@ const styles = {
         padding: '10px 14px',
         borderRadius: 'var(--radius-sm)',
         border: '1px solid var(--border)',
-        backgroundColor: 'var(--bg)',
+        backgroundColor: 'var(--white)',
         color: 'var(--text)',
         fontSize: '14px',
         transition: 'var(--transition)',
         cursor: 'pointer'
     },
+    helpText: {
+        fontSize: '11px',
+        color: 'var(--text3)',
+        marginTop: '2px',
+        lineHeight: '1.3'
+    },
     btnPrimary: {
-        padding: '12px 24px',
+        padding: '14px 24px',
         backgroundColor: 'var(--saffron)',
         color: 'var(--white)',
         border: 'none',
@@ -183,14 +197,14 @@ const styles = {
     errorText: {
         color: 'var(--error)',
         fontSize: '12px',
-        marginTop: '4px'
+        marginTop: '2px'
     },
     loadingOverlay: {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        gap: '16px',
+        gap: '24px',
         padding: '40px 0'
     },
     spinner: {
@@ -200,6 +214,28 @@ const styles = {
         borderTop: '4px solid var(--saffron)',
         borderRadius: '50%',
         animation: 'spin 1s linear infinite'
+    },
+    loadingStepList: {
+        width: '100%',
+        maxWidth: '320px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px'
+    },
+    loadingStepItem: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        fontSize: '14px',
+        color: 'var(--text2)'
+    },
+    loadingStepActive: {
+        color: 'var(--navy)',
+        fontWeight: 'bold'
+    },
+    loadingStepCheck: {
+        color: 'var(--success)',
+        fontWeight: 'bold'
     }
 };
 
@@ -214,12 +250,22 @@ const SIDEBAR_ITEMS = [
     { label: 'Settings', soon: true }
 ];
 
+const LOADING_STAGES = [
+    "Processing Inputs",
+    "Running ML Model",
+    "Applying Financial Rules",
+    "Generating AI Insights",
+    "Preparing Report"
+];
+
 export default function FinancialHealthAnalyzer() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     
     const [loading, setLoading] = useState(true);
     const [analyzing, setAnalyzing] = useState(false);
+    const [activeStageIndex, setActiveStageIndex] = useState(0);
+    
     const [formData, setFormData] = useState({
         age: 30,
         employment_status: 'salaried',
@@ -239,7 +285,6 @@ export default function FinancialHealthAnalyzer() {
         const fetchExistingProfile = async () => {
             if (!user) return;
             try {
-                // Get user profile first
                 const { data: userProfile } = await supabase
                     .from('user_profile')
                     .select('*')
@@ -255,7 +300,7 @@ export default function FinancialHealthAnalyzer() {
 
                     if (finProfile) {
                         setFormData({
-                            age: userProfile.age || 30,
+                            age: finProfile.age || 30,
                             employment_status: finProfile.employment_status || 'salaried',
                             monthly_income: finProfile.monthly_income || '',
                             monthly_expenses: finProfile.monthly_expenses || '',
@@ -310,6 +355,18 @@ export default function FinancialHealthAnalyzer() {
                 tempErrors[field] = 'Must be a valid positive number.';
             }
         });
+
+        // Relative validations
+        if (!tempErrors.monthly_income && !tempErrors.monthly_savings) {
+            if (parseFloat(formData.monthly_savings) > parseFloat(formData.monthly_income)) {
+                tempErrors.monthly_savings = 'Monthly savings cannot be greater than monthly income.';
+            }
+        }
+        if (!tempErrors.monthly_income && !tempErrors.monthly_expenses) {
+            if (parseFloat(formData.monthly_expenses) > parseFloat(formData.monthly_income)) {
+                tempErrors.monthly_expenses = 'Monthly expenses exceed monthly income. Check values.';
+            }
+        }
         
         setErrors(tempErrors);
         return Object.keys(tempErrors).length === 0;
@@ -320,21 +377,38 @@ export default function FinancialHealthAnalyzer() {
         if (!validateForm()) return;
 
         setAnalyzing(true);
+        setActiveStageIndex(0);
+
+        // Run loading stages every 750ms for high-end look
+        const stageInterval = setInterval(() => {
+            setActiveStageIndex(prev => {
+                if (prev < LOADING_STAGES.length - 1) {
+                    return prev + 1;
+                } else {
+                    clearInterval(stageInterval);
+                    return prev;
+                }
+            });
+        }, 750);
+
         try {
-            // Predict health score and guidelines
             const prediction = await financialHealthService.predictFinancialHealth(formData);
             
-            // Navigate to results page, passing the results and input details as router state
-            navigate('/health-result', { 
-                state: { 
-                    prediction, 
-                    inputs: formData 
-                } 
-            });
+            // Wait slightly so user sees final stage
+            setTimeout(() => {
+                clearInterval(stageInterval);
+                setAnalyzing(false);
+                navigate('/health-result', { 
+                    state: { 
+                        prediction, 
+                        inputs: formData 
+                    } 
+                });
+            }, 4000);
         } catch (err) {
-            console.error("Error analyzing financial health:", err);
-        } finally {
+            clearInterval(stageInterval);
             setAnalyzing(false);
+            console.error("Error analyzing financial health:", err);
         }
     };
 
@@ -395,11 +469,32 @@ export default function FinancialHealthAnalyzer() {
                             <div style={styles.loadingOverlay}>
                                 <div style={styles.spinner}></div>
                                 <h3 style={{ color: 'var(--navy)', fontFamily: "'Noto Serif', Georgia, serif" }}>AI Engine Analyzing Your Finances...</h3>
-                                <p style={{ color: 'var(--text2)', fontSize: '14px' }}>Evaluating metrics, debt ratios, and emergency cushions...</p>
+                                
+                                <div style={styles.loadingStepList}>
+                                    {LOADING_STAGES.map((stage, idx) => {
+                                        const isFinished = idx < activeStageIndex;
+                                        const isActive = idx === activeStageIndex;
+                                        return (
+                                            <div 
+                                                key={idx} 
+                                                style={{ 
+                                                    ...styles.loadingStepItem, 
+                                                    ...(isActive ? styles.loadingStepActive : {}) 
+                                                }}
+                                            >
+                                                <span style={isFinished ? styles.loadingStepCheck : {}}>
+                                                    {isFinished ? "✔" : (isActive ? "➤" : "○")}
+                                                </span>
+                                                <span>{stage}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         ) : (
                             <form onSubmit={handleSubmit}>
-                                <div style={styles.sectionTitle}>Demographics & Employment</div>
+                                {/* SECTION 1: PERSONAL INFORMATION */}
+                                <div style={styles.sectionTitle}>👤 Personal Information</div>
                                 <div style={styles.grid2}>
                                     <div style={styles.formGroup}>
                                         <label style={styles.label}>Age</label>
@@ -412,6 +507,7 @@ export default function FinancialHealthAnalyzer() {
                                             value={formData.age}
                                             onChange={handleInputChange}
                                         />
+                                        <span style={styles.helpText}>Your current age (must be between 18 and 100).</span>
                                         {errors.age && <span style={styles.errorText}>{errors.age}</span>}
                                     </div>
                                     <div style={styles.formGroup}>
@@ -428,11 +524,13 @@ export default function FinancialHealthAnalyzer() {
                                             <option value="unemployed">Unemployed</option>
                                             <option value="retired">Retired</option>
                                         </select>
+                                        <span style={styles.helpText}>Your current primary source of professional activity.</span>
                                         {errors.employment_status && <span style={styles.errorText}>{errors.employment_status}</span>}
                                     </div>
                                 </div>
 
-                                <div style={styles.sectionTitle}>Monthly Flow (INR / ₹)</div>
+                                {/* SECTION 2: INCOME */}
+                                <div style={styles.sectionTitle}>💰 Income</div>
                                 <div style={styles.grid2}>
                                     <div style={styles.formGroup}>
                                         <label style={styles.label}>Monthly Income (₹)</label>
@@ -444,19 +542,8 @@ export default function FinancialHealthAnalyzer() {
                                             value={formData.monthly_income}
                                             onChange={handleInputChange}
                                         />
+                                        <span style={styles.helpText}>Your total regular monthly take-home/net income after taxes.</span>
                                         {errors.monthly_income && <span style={styles.errorText}>{errors.monthly_income}</span>}
-                                    </div>
-                                    <div style={styles.formGroup}>
-                                        <label style={styles.label}>Monthly Expenses (₹)</label>
-                                        <input 
-                                            style={styles.input}
-                                            type="number" 
-                                            name="monthly_expenses"
-                                            placeholder="e.g. 40000"
-                                            value={formData.monthly_expenses}
-                                            onChange={handleInputChange}
-                                        />
-                                        {errors.monthly_expenses && <span style={styles.errorText}>{errors.monthly_expenses}</span>}
                                     </div>
                                     <div style={styles.formGroup}>
                                         <label style={styles.label}>Monthly Savings (₹)</label>
@@ -468,11 +555,26 @@ export default function FinancialHealthAnalyzer() {
                                             value={formData.monthly_savings}
                                             onChange={handleInputChange}
                                         />
+                                        <span style={styles.helpText}>The amount of money you set aside each month into savings or cash.</span>
                                         {errors.monthly_savings && <span style={styles.errorText}>{errors.monthly_savings}</span>}
+                                    </div>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Monthly Expenses (₹)</label>
+                                        <input 
+                                            style={styles.input}
+                                            type="number" 
+                                            name="monthly_expenses"
+                                            placeholder="e.g. 40000"
+                                            value={formData.monthly_expenses}
+                                            onChange={handleInputChange}
+                                        />
+                                        <span style={styles.helpText}>Your average monthly spending (rent, bills, groceries, leisure, etc).</span>
+                                        {errors.monthly_expenses && <span style={styles.errorText}>{errors.monthly_expenses}</span>}
                                     </div>
                                 </div>
 
-                                <div style={styles.sectionTitle}>Assets & Liabilities (INR / ₹)</div>
+                                {/* SECTION 3: ASSETS & INVESTMENTS */}
+                                <div style={styles.sectionTitle}>🏦 Assets & Investments</div>
                                 <div style={styles.grid2}>
                                     <div style={styles.formGroup}>
                                         <label style={styles.label}>Emergency Fund Balance (₹)</label>
@@ -484,22 +586,11 @@ export default function FinancialHealthAnalyzer() {
                                             value={formData.emergency_fund}
                                             onChange={handleInputChange}
                                         />
+                                        <span style={styles.helpText}>Liquid savings reserved specifically for unexpected financial shocks.</span>
                                         {errors.emergency_fund && <span style={styles.errorText}>{errors.emergency_fund}</span>}
                                     </div>
                                     <div style={styles.formGroup}>
-                                        <label style={styles.label}>Total Debt / Outstanding Loan (₹)</label>
-                                        <input 
-                                            style={styles.input}
-                                            type="number" 
-                                            name="total_debt"
-                                            placeholder="e.g. 500000"
-                                            value={formData.total_debt}
-                                            onChange={handleInputChange}
-                                        />
-                                        {errors.total_debt && <span style={styles.errorText}>{errors.total_debt}</span>}
-                                    </div>
-                                    <div style={styles.formGroup}>
-                                        <label style={styles.label}>Total Active Investments (Stocks, Mutual Funds, etc) (₹)</label>
+                                        <label style={styles.label}>Total Active Investments (₹)</label>
                                         <input 
                                             style={styles.input}
                                             type="number" 
@@ -508,6 +599,7 @@ export default function FinancialHealthAnalyzer() {
                                             value={formData.investments}
                                             onChange={handleInputChange}
                                         />
+                                        <span style={styles.helpText}>Total current valuation of your stocks, mutual funds, gold, deposits, etc.</span>
                                         {errors.investments && <span style={styles.errorText}>{errors.investments}</span>}
                                     </div>
                                     <div style={styles.formGroup}>
@@ -520,27 +612,45 @@ export default function FinancialHealthAnalyzer() {
                                             value={formData.insurance_cover}
                                             onChange={handleInputChange}
                                         />
+                                        <span style={styles.helpText}>The maximum sum assured of all active life/health insurance policies.</span>
                                         {errors.insurance_cover && <span style={styles.errorText}>{errors.insurance_cover}</span>}
                                     </div>
                                 </div>
 
-                                <div style={styles.sectionTitle}>Future Target</div>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label}>Primary Financial Goal</label>
-                                    <select 
-                                        style={styles.select}
-                                        name="financial_goal"
-                                        value={formData.financial_goal}
-                                        onChange={handleInputChange}
-                                    >
-                                        <option value="wealth_accumulation">Wealth Accumulation & Growth</option>
-                                        <option value="retirement">Retirement Planning</option>
-                                        <option value="debt_payoff">Debt Payoff & Financial Freedom</option>
-                                        <option value="buy_home">Buying a Home</option>
-                                        <option value="emergency_cushion">Building a Security / Emergency Cushion</option>
-                                        <option value="education">Higher Education / Kids Education</option>
-                                        <option value="other">Other Life Goals</option>
-                                    </select>
+                                {/* SECTION 4: LOANS & GOALS */}
+                                <div style={styles.sectionTitle}>💳 Loans & Goals</div>
+                                <div style={styles.grid2}>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Total Debt / Outstanding Loan (₹)</label>
+                                        <input 
+                                            style={styles.input}
+                                            type="number" 
+                                            name="total_debt"
+                                            placeholder="e.g. 500000"
+                                            value={formData.total_debt}
+                                            onChange={handleInputChange}
+                                        />
+                                        <span style={styles.helpText}>Total remaining outstanding balance of your home, auto, personal, or education loans.</span>
+                                        {errors.total_debt && <span style={styles.errorText}>{errors.total_debt}</span>}
+                                    </div>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.label}>Primary Financial Goal</label>
+                                        <select 
+                                            style={styles.select}
+                                            name="financial_goal"
+                                            value={formData.financial_goal}
+                                            onChange={handleInputChange}
+                                        >
+                                            <option value="wealth_accumulation">Wealth Accumulation & Growth</option>
+                                            <option value="retirement">Retirement Planning</option>
+                                            <option value="debt_payoff">Debt Payoff & Financial Freedom</option>
+                                            <option value="buy_home">Buying a Home</option>
+                                            <option value="emergency_cushion">Building a Security / Emergency Cushion</option>
+                                            <option value="education">Higher Education / Kids Education</option>
+                                            <option value="other">Other Life Goals</option>
+                                        </select>
+                                        <span style={styles.helpText}>Your primary target that drives your financial strategy.</span>
+                                    </div>
                                 </div>
 
                                 <button type="submit" style={styles.btnPrimary}>Analyze Financial Health</button>

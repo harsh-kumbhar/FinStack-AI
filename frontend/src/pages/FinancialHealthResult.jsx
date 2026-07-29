@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import ReactMarkdown from 'react-markdown';
+
 const styles = {
     layout: {
         display: 'flex',
@@ -117,7 +117,7 @@ const styles = {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '40px 24px',
+        padding: '32px 24px',
         textAlign: 'center'
     },
     scoreGauge: {
@@ -133,7 +133,7 @@ const styles = {
         boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.05)'
     },
     scoreNumber: {
-        fontSize: '48px',
+        fontSize: '44px',
         fontWeight: 'bold',
         fontFamily: "'Noto Serif', Georgia, serif",
         lineHeight: 1
@@ -154,6 +154,30 @@ const styles = {
         letterSpacing: '0.5px',
         display: 'inline-block'
     },
+    personaCard: {
+        borderTop: '4px solid var(--navy)',
+        position: 'relative',
+        overflow: 'hidden'
+    },
+    personaTitle: {
+        fontSize: '22px',
+        color: 'var(--navy)',
+        fontWeight: 'bold',
+        fontFamily: "'Noto Serif', Georgia, serif",
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        marginBottom: '12px'
+    },
+    personaDetailsGrid: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '12px',
+        marginTop: '16px',
+        fontSize: '13px',
+        borderTop: '1px solid var(--border)',
+        paddingTop: '12px'
+    },
     sectionTitle: {
         fontSize: '18px',
         color: 'var(--navy)',
@@ -164,32 +188,151 @@ const styles = {
         alignItems: 'center',
         gap: '8px'
     },
+    metricCard: {
+        backgroundColor: 'var(--bg)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-md)',
+        padding: '16px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '8px'
+    },
+    metricHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+    metricName: {
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'var(--text)'
+    },
+    metricValues: {
+        display: 'flex',
+        alignItems: 'baseline',
+        gap: '8px'
+    },
+    metricCurrent: {
+        fontSize: '22px',
+        fontWeight: 'bold',
+        color: 'var(--navy)'
+    },
+    metricRecommended: {
+        fontSize: '12px',
+        color: 'var(--text2)'
+    },
+    metricDescription: {
+        fontSize: '12px',
+        color: 'var(--text3)',
+        lineHeight: '1.4'
+    },
+    recommendationCard: {
+        borderLeft: '4px solid var(--navy2)',
+        backgroundColor: 'var(--white)',
+        borderTop: '1px solid var(--border)',
+        borderRight: '1px solid var(--border)',
+        borderBottom: '1px solid var(--border)',
+        borderRadius: 'var(--radius-md)',
+        padding: '16px',
+        marginBottom: '12px'
+    },
+    recHeader: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '8px'
+    },
+    recTitle: {
+        fontSize: '15px',
+        fontWeight: 'bold',
+        color: 'var(--navy)'
+    },
+    recValues: {
+        display: 'flex',
+        gap: '16px',
+        fontSize: '12px',
+        margin: '8px 0',
+        padding: '8px',
+        backgroundColor: 'var(--bg)',
+        borderRadius: '4px'
+    },
     bulletList: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
+        gap: '8px',
         paddingLeft: 0,
         listStyle: 'none'
     },
     bulletItem: {
         display: 'flex',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         gap: '10px',
         fontSize: '14px',
         color: 'var(--text)',
         lineHeight: '1.5'
     },
-    iconWrap: {
-        width: '18px',
-        height: '18px',
-        borderRadius: '50%',
+    checkIcon: {
+        color: 'var(--success)',
+        fontWeight: 'bold',
+        fontSize: '16px'
+    },
+    warningCard: {
+        backgroundColor: 'var(--error-light)',
+        border: '1px solid var(--error)',
+        padding: '12px 16px',
+        borderRadius: 'var(--radius-sm)',
+        color: 'var(--error)',
+        fontSize: '14px',
+        marginBottom: '8px',
+        fontWeight: '500'
+    },
+    summaryDetails: {
+        width: '100%',
+        backgroundColor: 'var(--info-light)',
+        border: '1px solid var(--info)',
+        borderRadius: 'var(--radius-md)',
+        padding: '16px',
+        cursor: 'pointer'
+    },
+    summarySummary: {
+        fontWeight: 'bold',
+        color: 'var(--info)',
+        outline: 'none',
+        userSelect: 'none'
+    },
+    summaryText: {
+        marginTop: '10px',
+        fontSize: '14px',
+        lineHeight: '1.6',
+        color: 'var(--text)'
+    },
+    progressBarContainer: {
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '11px',
-        color: 'var(--white)',
-        flexShrink: 0,
-        marginTop: '2px'
+        flexDirection: 'column',
+        gap: '12px'
+    },
+    progressBarItem: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px'
+    },
+    progressBarLabelRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        fontSize: '13px',
+        fontWeight: '600'
+    },
+    progressBarTrack: {
+        height: '8px',
+        backgroundColor: 'var(--bg2)',
+        borderRadius: '4px',
+        overflow: 'hidden'
+    },
+    progressBarFill: {
+        height: '100%',
+        backgroundColor: 'var(--navy2)',
+        borderRadius: '4px',
+        transition: 'width 1s ease-in-out'
     },
     actionRow: {
         display: 'flex',
@@ -218,16 +361,6 @@ const styles = {
         cursor: 'pointer',
         flex: 1,
         textAlign: 'center'
-    },
-    aiSummaryBox: {
-        backgroundColor: 'var(--info-light)',
-        border: '1px solid var(--info)',
-        borderRadius: 'var(--radius-md)',
-        padding: '20px',
-        color: 'var(--text)',
-        fontSize: '15px',
-        lineHeight: '1.6',
-        marginBottom: '24px'
     }
 };
 
@@ -246,6 +379,8 @@ export default function FinancialHealthResult() {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+    
+    const [summaryExpanded, setSummaryExpanded] = useState(false);
     
     // Get state passed from the Analyzer Form
     const { prediction, inputs } = location.state || {};
@@ -267,7 +402,20 @@ export default function FinancialHealthResult() {
         );
     }
 
-    const { ml_health_score, health_status, model_version, strengths, weaknesses, risks, recommendations, ai_summary } = prediction;
+    const { 
+        ml_health_score, 
+        health_status, 
+        model_version, 
+        persona, 
+        metrics, 
+        score_breakdown, 
+        strengths, 
+        weaknesses, 
+        risks, 
+        recommendations, 
+        ai_summary 
+    } = prediction;
+    
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     // Determine semantic color style properties for score
@@ -318,7 +466,7 @@ export default function FinancialHealthResult() {
                 {/* TOP NAVBAR */}
                 <header style={styles.topbar}>
                     <div style={{ fontWeight: '600', color: 'var(--navy)' }}>
-                        Analysis Results
+                        Analysis Report
                     </div>
                     <div style={styles.topbarRight}>
                         <span style={{ color: 'var(--text2)', fontSize: '14px' }}>{today}</span>
@@ -328,132 +476,249 @@ export default function FinancialHealthResult() {
 
                 {/* CONTENT */}
                 <div style={styles.content}>
+                    
+                    {/* PERSONA CARD & SCORE ROW */}
                     <div style={styles.grid2}>
-                        {/* SCORE METRIC CARD */}
+                        {/* SCORE CARD */}
                         <div style={{ ...styles.card, ...styles.scoreCard }}>
-                            <h3 style={{ fontSize: '16px', color: 'var(--text2)', marginBottom: '24px', fontWeight: 'bold' }}>
+                            <h3 style={{ fontSize: '16px', color: 'var(--text2)', marginBottom: '16px', fontWeight: 'bold' }}>
                                 Financial Health Score
                             </h3>
                             <div style={{ ...styles.scoreGauge, border: `6px solid ${scoreColor}` }}>
                                 <span style={{ ...styles.scoreNumber, color: scoreColor }}>
-                                    {Math.round(ml_health_score)}
+                                    {ml_health_score}
                                 </span>
                                 <span style={styles.scoreLabel}>out of 100</span>
                             </div>
-                            <div style={{ ...styles.statusBadge, backgroundColor: scoreBg, color: scoreColor, marginBottom: '20px' }}>
+                            <div style={{ ...styles.statusBadge, backgroundColor: scoreBg, color: scoreColor, marginBottom: '12px' }}>
                                 {statusText}
                             </div>
                             <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
-                                Evaluated using Engine version: {model_version}
+                                Engine Version: {model_version}
                             </span>
                         </div>
 
-                        {/* SUMMARY CARD */}
-                        <div style={styles.card}>
-                            <h3 style={{ ...styles.sectionTitle, marginBottom: '12px' }}>AI Financial Diagnosis</h3>
-                            {ai_summary && (
-                                <div style={styles.aiSummaryBox}>
-                                    <strong>Summary:</strong> <ReactMarkdown>
-                                        {ai_summary}
-                                    </ReactMarkdown>
+                        {/* PERSONA CARD */}
+                        {persona && (
+                            <div style={{ ...styles.card, ...styles.personaCard }}>
+                                <div style={styles.personaTitle}>
+                                    <span>{persona.emoji}</span>
+                                    <span>{persona.title}</span>
                                 </div>
-                            )}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px', color: 'var(--text2)' }}>
-                                <p><strong>Age Category:</strong> {inputs?.age || 'N/A'} years ({inputs?.employment_status})</p>
-                                <p><strong>Financial Target:</strong> {inputs?.financial_goal ? inputs.financial_goal.replace(/_/g, ' ').toUpperCase() : 'N/A'}</p>
-                                <p><strong>Monthly Allocation:</strong> Earns ₹{Number(inputs?.monthly_income).toLocaleString('en-IN')}, Saves ₹{Number(inputs?.monthly_savings).toLocaleString('en-IN')}</p>
+                                <p style={{ fontSize: '14px', color: 'var(--text)', lineHeight: '1.5' }}>
+                                    {persona.description}
+                                </p>
+                                <div style={styles.personaDetailsGrid}>
+                                    <div><strong>💪 Primary Strength:</strong> {persona.strength}</div>
+                                    <div><strong>🎯 Focus Area:</strong> {persona.focus_area}</div>
+                                    <div><strong>⚡ Risk Profile:</strong> {persona.risk_level}</div>
+                                </div>
+                                <div style={styles.actionRow}>
+                                    <button style={styles.btnOutline} onClick={handleBack}>Recalculate</button>
+                                    <button style={styles.btnPrimary} onClick={handleDashboard}>Dashboard</button>
+                                </div>
                             </div>
-                            
-                            <div style={styles.actionRow}>
-                                <button style={styles.btnOutline} onClick={handleBack}>Recalculate Form</button>
-                                <button style={styles.btnPrimary} onClick={handleDashboard}>Go to Dashboard</button>
-                            </div>
-                        </div>
+                        )}
                     </div>
 
+                    {/* SCORE BREAKDOWN & EXPANDABLE AI SUMMARY */}
                     <div style={styles.grid2}>
-                        {/* STRENGTHS */}
+                        {/* SCORE BREAKDOWN */}
+                        {score_breakdown && (
+                            <div style={styles.card}>
+                                <h3 style={styles.sectionTitle}>🎯 Score Breakdown</h3>
+                                <div style={styles.progressBarContainer}>
+                                    {Object.entries(score_breakdown).map(([category, value]) => {
+                                        // Assume breakdown values are out of 20
+                                        const percentage = Math.round((value / 20) * 100);
+                                        return (
+                                            <div key={category} style={styles.progressBarItem}>
+                                                <div style={styles.progressBarLabelRow}>
+                                                    <span>{category}</span>
+                                                    <span>{value} / 20</span>
+                                                </div>
+                                                <div style={styles.progressBarTrack}>
+                                                    <div 
+                                                        style={{ 
+                                                            ...styles.progressBarFill, 
+                                                            width: `${percentage}%`,
+                                                            backgroundColor: percentage >= 75 ? 'var(--success)' : (percentage >= 50 ? 'var(--navy2)' : 'var(--saffron)')
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* EXPANDABLE AI SUMMARY CARD */}
+                        {ai_summary && (
+                            <div style={styles.card}>
+                                <h3 style={styles.sectionTitle}>💬 Executive Summary</h3>
+                                <details 
+                                    style={styles.summaryDetails}
+                                    open={summaryExpanded}
+                                    onToggle={(e) => setSummaryExpanded(e.target.open)}
+                                >
+                                    <summary style={styles.summarySummary}>
+                                        {summaryExpanded ? "Click to collapse report summary" : "Click to expand report summary"}
+                                    </summary>
+                                    <div style={styles.summaryText}>
+                                        {ai_summary}
+                                    </div>
+                                </details>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* SELF-DESCRIBING METRIC CARDS */}
+                    {metrics && metrics.length > 0 && (
+                        <div>
+                            <h3 style={{ ...styles.sectionTitle, margin: '16px 0' }}>📊 Detailed Metrics</h3>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                                {metrics.map((metric, idx) => {
+                                    let badgeColor = 'var(--text2)';
+                                    let badgeBg = 'var(--bg2)';
+                                    if (metric.severity === 'success') {
+                                        badgeColor = 'var(--success)';
+                                        badgeBg = 'var(--success-light)';
+                                    } else if (metric.severity === 'info') {
+                                        badgeColor = 'var(--info)';
+                                        badgeBg = 'var(--info-light)';
+                                    } else if (metric.severity === 'error') {
+                                        badgeColor = 'var(--error)';
+                                        badgeBg = 'var(--error-light)';
+                                    } else if (metric.severity === 'warning') {
+                                        badgeColor = 'var(--saffron)';
+                                        badgeBg = 'var(--saffron-lt)';
+                                    }
+                                    return (
+                                        <div key={idx} style={styles.metricCard}>
+                                            <div style={styles.metricHeader}>
+                                                <span style={styles.metricName}>{metric.name}</span>
+                                                <span style={{ 
+                                                    fontSize: '11px', 
+                                                    padding: '2px 8px', 
+                                                    borderRadius: '4px', 
+                                                    color: badgeColor, 
+                                                    backgroundColor: badgeBg,
+                                                    fontWeight: 'bold'
+                                                }}>
+                                                    {metric.status}
+                                                </span>
+                                            </div>
+                                            <div style={styles.metricValues}>
+                                                <span style={styles.metricCurrent}>{metric.value}{metric.unit}</span>
+                                                <span style={styles.metricRecommended}>Target: {metric.recommended}</span>
+                                            </div>
+                                            <div style={styles.metricDescription}>{metric.description}</div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STRENGTHS & WEAKNESSES */}
+                    <div style={styles.grid2}>
+                        {/* STRENGTHS - RENDER AS GREEN CHECKLIST */}
                         <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>
-                                <span style={{ ...styles.iconWrap, backgroundColor: 'var(--success)' }}>✓</span>
-                                Key Strengths
-                            </h3>
+                            <h3 style={styles.sectionTitle}>✔️ Key Strengths</h3>
                             <ul style={styles.bulletList}>
                                 {strengths && strengths.length > 0 ? (
                                     strengths.map((str, idx) => (
                                         <li key={idx} style={styles.bulletItem}>
-                                            <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>•</span>
+                                            <span style={styles.checkIcon}>✔</span>
                                             <span>{str}</span>
                                         </li>
                                     ))
                                 ) : (
-                                    <li style={styles.bulletItem}>No significant strengths identified yet. Keep saving!</li>
+                                    <li style={styles.bulletItem}>None identified.</li>
                                 )}
                             </ul>
                         </div>
 
-                        {/* WEAKNESSES */}
+                        {/* WEAKNESSES - RENDER AS WARNING CARDS */}
                         <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>
-                                <span style={{ ...styles.iconWrap, backgroundColor: 'var(--error)' }}>!</span>
-                                Weaknesses
-                            </h3>
-                            <ul style={styles.bulletList}>
+                            <h3 style={styles.sectionTitle}>⚠️ Area of Improvements</h3>
+                            <div>
                                 {weaknesses && weaknesses.length > 0 ? (
                                     weaknesses.map((weak, idx) => (
-                                        <li key={idx} style={styles.bulletItem}>
-                                            <span style={{ color: 'var(--error)', fontWeight: 'bold' }}>•</span>
-                                            <span>{weak}</span>
-                                        </li>
+                                        <div key={idx} style={styles.warningCard}>
+                                            {weak}
+                                        </div>
                                     ))
                                 ) : (
-                                    <li style={styles.bulletItem}>No major structural weaknesses found. Good allocation discipline!</li>
+                                    <div style={{ color: 'var(--text2)', fontSize: '14px' }}>No major weaknesses identified. Good job!</div>
                                 )}
-                            </ul>
+                            </div>
                         </div>
                     </div>
 
-                    <div style={styles.grid2}>
-                        {/* RISKS */}
+                    {/* RISKS (HIDE IF EMPTY) */}
+                    {risks && risks.length > 0 && (
                         <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>
-                                <span style={{ ...styles.iconWrap, backgroundColor: 'var(--warning)' }}>⚠</span>
-                                Financial Risks
-                            </h3>
-                            <ul style={styles.bulletList}>
-                                {risks && risks.length > 0 ? (
-                                    risks.map((risk, idx) => (
-                                        <li key={idx} style={styles.bulletItem}>
-                                            <span style={{ color: 'var(--warning)', fontWeight: 'bold' }}>•</span>
-                                            <span>{risk}</span>
-                                        </li>
-                                    ))
-                                ) : (
-                                    <li style={styles.bulletItem}>Standard risk level. No critical warnings triggered.</li>
-                                )}
-                            </ul>
+                            <h3 style={{ ...styles.sectionTitle, color: 'var(--error)' }}>🚨 Critical Risks Identified</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {risks.map((risk, idx) => (
+                                    <div key={idx} style={{ 
+                                        backgroundColor: 'var(--error-light)', 
+                                        color: 'var(--error)', 
+                                        padding: '14px', 
+                                        borderRadius: 'var(--radius-sm)',
+                                        fontSize: '14px',
+                                        borderLeft: '4px solid var(--error)',
+                                        fontWeight: '500'
+                                    }}>
+                                        {risk}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
+                    )}
 
-                        {/* RECOMMENDATIONS */}
+                    {/* DETAILED ACTION CARD RECOMMENDATIONS */}
+                    {recommendations && recommendations.length > 0 && (
                         <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>
-                                <span style={{ ...styles.iconWrap, backgroundColor: 'var(--info)' }}>i</span>
-                                Recommendations & Next Steps
-                            </h3>
-                            <ul style={styles.bulletList}>
-                                {recommendations && recommendations.length > 0 ? (
-                                    recommendations.map((rec, idx) => (
-                                        <li key={idx} style={styles.bulletItem}>
-                                            <span style={{ color: 'var(--info)', fontWeight: 'bold' }}>•</span>
-                                            <span>{rec}</span>
-                                        </li>
-                                    ))
-                                ) : (
-                                    <li style={styles.bulletItem}>Continue with your current financial plan and check back quarterly.</li>
-                                )}
-                            </ul>
+                            <h3 style={styles.sectionTitle}>💡 Personalized Recommendations</h3>
+                            <div>
+                                {recommendations.map((rec, idx) => {
+                                    let priorityColor = 'var(--text2)';
+                                    if (rec.priority === 'High') priorityColor = 'var(--error)';
+                                    else if (rec.priority === 'Medium') priorityColor = 'var(--saffron)';
+                                    else if (rec.priority === 'Low') priorityColor = 'var(--success)';
+                                    
+                                    return (
+                                        <div key={idx} style={styles.recommendationCard}>
+                                            <div style={styles.recHeader}>
+                                                <span style={styles.recTitle}>{rec.title}</span>
+                                                <span style={{ 
+                                                    fontSize: '11px', 
+                                                    fontWeight: 'bold', 
+                                                    color: priorityColor,
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {rec.priority} Priority
+                                                </span>
+                                            </div>
+                                            <p style={{ fontSize: '13px', color: 'var(--text)', margin: '4px 0' }}>
+                                                {rec.reason}
+                                            </p>
+                                            <div style={styles.recValues}>
+                                                <div><strong>Current Allocation:</strong> {rec.current_value}</div>
+                                                <div><strong>Recommended Allocation:</strong> {rec.recommended_value}</div>
+                                            </div>
+                                            <p style={{ fontSize: '12px', color: 'var(--text3)', fontStyle: 'italic', marginTop: '6px' }}>
+                                                <strong>Impact:</strong> {rec.impact}
+                                            </p>
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </main>
         </div>
