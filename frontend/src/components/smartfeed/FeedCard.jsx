@@ -7,8 +7,9 @@ import React from 'react';
  *
  * @param {Object}   article   - article data object
  * @param {Function} onBookmark - called with (articleId, isBookmarked)
+ * @param {Function} onRead - called with (article) when read button is clicked
  */
-function FeedCard({ article, onBookmark }) {
+function FeedCard({ article, onBookmark, onRead }) {
     const {
         id,
         type,
@@ -60,8 +61,8 @@ function FeedCard({ article, onBookmark }) {
 
             {/* Card Body */}
             <div className="sf-card-body">
-                <h3 className="sf-card-title">{title}</h3>
-                <p className="sf-card-summary">{summary}</p>
+                <h3 className="sf-card-title">{getEmoji(type, category)} {title}</h3>
+                <p className="sf-card-summary" title={summary}>{summary}</p>
 
                 {/* AI Summary Box — shown when available */}
                 {ai_summary && (
@@ -100,10 +101,28 @@ function FeedCard({ article, onBookmark }) {
                     <span>·</span>
                     <span>{read_time} min read</span>
                 </div>
-                <button className="sf-read-btn">Read →</button>
+                <button className="sf-read-btn" onClick={() => onRead && onRead(article)}>Read →</button>
             </div>
         </div>
     );
+}
+
+/**
+ * Utility: Get appropriate emoji based on type/category
+ * @param {string} type 
+ * @param {string} category 
+ * @returns {string}
+ */
+function getEmoji(type, category) {
+    if (type === 'scheme') return '🏛️';
+    if (type === 'ai_pick') return '✨';
+    switch (category) {
+        case 'markets': return '📈';
+        case 'crypto': return '🪙';
+        case 'economy': return '🌍';
+        case 'personal_finance': return '💰';
+        default: return '📰';
+    }
 }
 
 /**
