@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -91,276 +91,401 @@ const styles = {
         border: 'none',
         borderRadius: 'var(--radius-sm)',
         fontWeight: '600',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        transition: 'var(--transition)'
     },
     content: {
         marginTop: '64px',
-        padding: '32px',
+        padding: '40px 32px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '24px'
+        gap: '32px',
+        maxWidth: '1400px',
+        margin: '64px auto 0 auto',
+        width: '100%'
     },
     grid2: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
-        gap: '24px'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))',
+        gap: '32px'
     },
     card: {
         backgroundColor: 'var(--white)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-lg)',
-        padding: '24px',
-        boxShadow: 'var(--shadow-sm)'
+        padding: '32px',
+        boxShadow: 'var(--shadow-sm)',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        display: 'flex',
+        flexDirection: 'column'
     },
     scoreCard: {
-        display: 'flex',
-        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '32px 24px',
-        textAlign: 'center'
+        textAlign: 'center',
+        position: 'relative'
     },
-    scoreGauge: {
+    scoreRingContainer: {
         position: 'relative',
-        width: '160px',
-        height: '160px',
-        borderRadius: '50%',
+        width: '180px',
+        height: '180px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '24px'
+    },
+    scoreInner: {
+        position: 'absolute',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: '20px',
-        boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.05)'
+        justifyContent: 'center'
     },
     scoreNumber: {
-        fontSize: '44px',
-        fontWeight: 'bold',
+        fontSize: '48px',
+        fontWeight: '800',
         fontFamily: "'Noto Serif', Georgia, serif",
-        lineHeight: 1
+        lineHeight: '1.1'
     },
-    scoreLabel: {
-        fontSize: '12px',
-        color: 'var(--text2)',
-        marginTop: '4px',
-        textTransform: 'uppercase',
+    scoreMax: {
+        fontSize: '14px',
+        color: 'var(--text3)',
+        fontWeight: '600',
         letterSpacing: '1px'
     },
     statusBadge: {
-        padding: '6px 16px',
-        borderRadius: '20px',
-        fontSize: '14px',
-        fontWeight: 'bold',
+        padding: '8px 20px',
+        borderRadius: '30px',
+        fontSize: '15px',
+        fontWeight: '700',
         textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        display: 'inline-block'
+        letterSpacing: '1px',
+        display: 'inline-block',
+        marginBottom: '16px'
+    },
+    engineVersion: {
+        fontSize: '12px',
+        color: 'var(--text3)',
+        marginTop: 'auto',
+        opacity: 0.7
     },
     personaCard: {
-        borderTop: '4px solid var(--navy)',
-        position: 'relative',
-        overflow: 'hidden'
+        borderTop: '6px solid var(--navy)',
+        justifyContent: 'center'
+    },
+    personaHeader: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '16px',
+        marginBottom: '20px'
+    },
+    personaEmoji: {
+        fontSize: '48px',
+        backgroundColor: 'var(--bg)',
+        width: '80px',
+        height: '80px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        boxShadow: 'var(--shadow-sm)'
     },
     personaTitle: {
-        fontSize: '22px',
+        fontSize: '28px',
         color: 'var(--navy)',
-        fontWeight: 'bold',
+        fontWeight: '800',
         fontFamily: "'Noto Serif', Georgia, serif",
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        marginBottom: '12px'
+        lineHeight: 1.2
+    },
+    personaDesc: {
+        fontSize: '15px',
+        color: 'var(--text2)',
+        lineHeight: '1.6',
+        marginBottom: '24px'
     },
     personaDetailsGrid: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '12px',
-        marginTop: '16px',
-        fontSize: '13px',
-        borderTop: '1px solid var(--border)',
-        paddingTop: '12px'
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+        backgroundColor: 'var(--bg)',
+        padding: '24px',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--border)'
+    },
+    personaDetailRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        fontSize: '14px'
     },
     sectionTitle: {
-        fontSize: '18px',
+        fontSize: '20px',
         color: 'var(--navy)',
         fontFamily: "'Noto Serif', Georgia, serif",
-        marginBottom: '16px',
+        marginBottom: '24px',
         fontWeight: 'bold',
         display: 'flex',
         alignItems: 'center',
-        gap: '8px'
+        gap: '10px'
+    },
+    metricGrid: {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        gap: '24px'
     },
     metricCard: {
-        backgroundColor: 'var(--bg)',
+        backgroundColor: 'var(--white)',
         border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
-        padding: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px'
+        padding: '20px',
+        boxShadow: 'var(--shadow-sm)',
+        transition: 'transform 0.2s ease',
+        cursor: 'default'
     },
     metricHeader: {
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'flex-start',
+        marginBottom: '16px'
     },
     metricName: {
-        fontSize: '14px',
-        fontWeight: '600',
-        color: 'var(--text)'
+        fontSize: '15px',
+        fontWeight: '700',
+        color: 'var(--text)',
+        lineHeight: 1.3
     },
     metricValues: {
         display: 'flex',
-        alignItems: 'baseline',
-        gap: '8px'
+        flexDirection: 'column',
+        gap: '4px',
+        marginBottom: '12px'
     },
     metricCurrent: {
-        fontSize: '22px',
-        fontWeight: 'bold',
-        color: 'var(--navy)'
+        fontSize: '28px',
+        fontWeight: '800',
+        color: 'var(--navy)',
+        fontFamily: "'Noto Serif', Georgia, serif"
     },
     metricRecommended: {
-        fontSize: '12px',
-        color: 'var(--text2)'
+        fontSize: '13px',
+        color: 'var(--text2)',
+        fontWeight: '500'
     },
     metricDescription: {
-        fontSize: '12px',
+        fontSize: '13px',
         color: 'var(--text3)',
-        lineHeight: '1.4'
+        lineHeight: '1.5',
+        borderTop: '1px dashed var(--border)',
+        paddingTop: '12px'
     },
     recommendationCard: {
-        borderLeft: '4px solid var(--navy2)',
         backgroundColor: 'var(--white)',
-        borderTop: '1px solid var(--border)',
-        borderRight: '1px solid var(--border)',
-        borderBottom: '1px solid var(--border)',
+        border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
-        padding: '16px',
-        marginBottom: '12px'
+        padding: '24px',
+        marginBottom: '16px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+        transition: 'var(--transition)'
     },
     recHeader: {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '8px'
+        marginBottom: '12px'
     },
     recTitle: {
-        fontSize: '15px',
-        fontWeight: 'bold',
+        fontSize: '16px',
+        fontWeight: '700',
         color: 'var(--navy)'
     },
-    recValues: {
-        display: 'flex',
+    recReason: {
+        fontSize: '14px',
+        color: 'var(--text2)',
+        lineHeight: '1.6',
+        marginBottom: '16px'
+    },
+    recValuesGrid: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
         gap: '16px',
-        fontSize: '12px',
-        margin: '8px 0',
-        padding: '8px',
         backgroundColor: 'var(--bg)',
+        padding: '16px',
+        borderRadius: 'var(--radius-sm)',
+        marginBottom: '16px'
+    },
+    recValueBlock: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px'
+    },
+    recValueLabel: {
+        fontSize: '12px',
+        textTransform: 'uppercase',
+        color: 'var(--text3)',
+        fontWeight: '600',
+        letterSpacing: '0.5px'
+    },
+    recValueData: {
+        fontSize: '16px',
+        fontWeight: '700',
+        color: 'var(--text)'
+    },
+    recImpact: {
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px',
+        fontSize: '13px',
+        color: 'var(--info)',
+        fontWeight: '600',
+        backgroundColor: 'var(--info-light)',
+        padding: '8px 12px',
         borderRadius: '4px'
     },
     bulletList: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
+        gap: '16px',
         paddingLeft: 0,
         listStyle: 'none'
     },
     bulletItem: {
         display: 'flex',
-        alignItems: 'center',
-        gap: '10px',
-        fontSize: '14px',
+        alignItems: 'flex-start',
+        gap: '12px',
+        fontSize: '15px',
         color: 'var(--text)',
-        lineHeight: '1.5'
+        lineHeight: '1.5',
+        backgroundColor: 'var(--success-light)',
+        padding: '16px',
+        borderRadius: 'var(--radius-sm)',
+        border: '1px solid rgba(10, 138, 76, 0.2)'
     },
     checkIcon: {
         color: 'var(--success)',
         fontWeight: 'bold',
-        fontSize: '16px'
+        fontSize: '18px',
+        marginTop: '-2px'
+    },
+    emptyState: {
+        color: 'var(--text3)',
+        fontSize: '15px',
+        fontStyle: 'italic',
+        textAlign: 'center',
+        padding: '32px',
+        backgroundColor: 'var(--bg)',
+        borderRadius: 'var(--radius-sm)'
     },
     warningCard: {
+        backgroundColor: 'var(--warning-light)',
+        borderLeft: '4px solid var(--warning)',
+        padding: '16px 20px',
+        borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
+        color: 'var(--text)',
+        fontSize: '15px',
+        marginBottom: '12px',
+        lineHeight: '1.5',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+    },
+    riskCard: {
         backgroundColor: 'var(--error-light)',
-        border: '1px solid var(--error)',
-        padding: '12px 16px',
-        borderRadius: 'var(--radius-sm)',
+        borderLeft: '4px solid var(--error)',
+        padding: '16px 20px',
+        borderRadius: '0 var(--radius-sm) var(--radius-sm) 0',
         color: 'var(--error)',
-        fontSize: '14px',
-        marginBottom: '8px',
+        fontSize: '15px',
+        marginBottom: '12px',
+        lineHeight: '1.5',
         fontWeight: '500'
     },
     summaryDetails: {
         width: '100%',
-        backgroundColor: 'var(--info-light)',
-        border: '1px solid var(--info)',
+        backgroundColor: 'var(--bg)',
+        border: '1px solid var(--border)',
         borderRadius: 'var(--radius-md)',
-        padding: '16px',
-        cursor: 'pointer'
+        padding: '24px',
+        cursor: 'pointer',
+        transition: 'var(--transition)'
     },
     summarySummary: {
-        fontWeight: 'bold',
-        color: 'var(--info)',
+        fontWeight: '700',
+        fontSize: '16px',
+        color: 'var(--navy)',
         outline: 'none',
-        userSelect: 'none'
+        userSelect: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between'
     },
-    summaryText: {
-        marginTop: '10px',
-        fontSize: '14px',
-        lineHeight: '1.6',
-        color: 'var(--text)'
+    summaryTextContainer: {
+        marginTop: '24px',
+        paddingTop: '24px',
+        borderTop: '1px solid var(--border)'
+    },
+    summaryParagraph: {
+        fontSize: '15px',
+        lineHeight: '1.8',
+        color: 'var(--text)',
+        marginBottom: '16px'
     },
     progressBarContainer: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px'
+        gap: '20px'
     },
     progressBarItem: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '4px'
+        gap: '8px'
     },
     progressBarLabelRow: {
         display: 'flex',
         justifyContent: 'space-between',
-        fontSize: '13px',
-        fontWeight: '600'
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'var(--text)'
     },
     progressBarTrack: {
-        height: '8px',
+        height: '10px',
         backgroundColor: 'var(--bg2)',
-        borderRadius: '4px',
+        borderRadius: '5px',
         overflow: 'hidden'
     },
     progressBarFill: {
         height: '100%',
-        backgroundColor: 'var(--navy2)',
-        borderRadius: '4px',
-        transition: 'width 1s ease-in-out'
+        borderRadius: '5px',
+        transition: 'width 1.5s cubic-bezier(0.4, 0, 0.2, 1)'
     },
     actionRow: {
         display: 'flex',
         gap: '16px',
-        marginTop: '12px'
+        marginTop: '32px'
     },
     btnPrimary: {
-        padding: '12px 24px',
+        padding: '14px 28px',
         backgroundColor: 'var(--saffron)',
         color: 'var(--white)',
         border: 'none',
         borderRadius: 'var(--radius-sm)',
         fontWeight: 'bold',
+        fontSize: '15px',
         cursor: 'pointer',
         boxShadow: 'var(--shadow-sm)',
         flex: 1,
-        textAlign: 'center'
+        textAlign: 'center',
+        transition: 'transform 0.1s ease, box-shadow 0.2s ease'
     },
     btnOutline: {
-        padding: '12px 24px',
+        padding: '14px 28px',
         backgroundColor: 'var(--white)',
         color: 'var(--navy)',
-        border: '1px solid var(--navy)',
+        border: '2px solid var(--navy)',
         borderRadius: 'var(--radius-sm)',
         fontWeight: 'bold',
+        fontSize: '15px',
         cursor: 'pointer',
         flex: 1,
-        textAlign: 'center'
+        textAlign: 'center',
+        transition: 'background-color 0.2s ease'
     }
 };
 
@@ -379,63 +504,86 @@ export default function FinancialHealthResult() {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
-    
-    const [summaryExpanded, setSummaryExpanded] = useState(false);
-    
-    // Get state passed from the Analyzer Form
+
+    const [summaryExpanded, setSummaryExpanded] = useState(true);
+    const [animatedScore, setAnimatedScore] = useState(0);
+    const [animateBars, setAnimateBars] = useState(false);
+
     const { prediction, inputs } = location.state || {};
 
-    const handleBack = () => {
-        navigate('/health-analyzer');
-    };
+    useEffect(() => {
+        if (prediction?.ml_health_score) {
+            const timer = setTimeout(() => {
+                setAnimatedScore(Number(prediction.ml_health_score));
+                setAnimateBars(true);
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [prediction]);
 
-    const handleDashboard = () => {
-        navigate('/dashboard');
-    };
+    const handleBack = () => navigate('/health-analyzer');
+    const handleDashboard = () => navigate('/dashboard');
 
     if (!prediction) {
         return (
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg)', gap: '16px' }}>
-                <h2 style={{ color: 'var(--navy)' }}>No evaluation results found.</h2>
-                <button style={{ ...styles.btnPrimary, flex: 'none' }} onClick={handleBack}>Go to Analyzer Form</button>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg)', gap: '24px' }}>
+                <h2 style={{ color: 'var(--navy)', fontFamily: "'Noto Serif', serif" }}>No evaluation results found.</h2>
+                <button style={{ ...styles.btnPrimary, flex: 'none', width: 'auto' }} onClick={handleBack}>Go to Analyzer Form</button>
             </div>
         );
     }
 
-    const { 
-        ml_health_score, 
-        health_status, 
-        model_version, 
-        persona, 
-        metrics, 
-        score_breakdown, 
-        strengths, 
-        weaknesses, 
-        risks, 
-        recommendations, 
-        ai_summary 
+    const {
+        ml_health_score,
+        health_status,
+        model_version,
+        persona,
+        metrics,
+        score_breakdown,
+        strengths,
+        weaknesses,
+        risks,
+        recommendations,
+        ai_summary
     } = prediction;
-    
+
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     // Determine semantic color style properties for score
     let scoreColor = 'var(--text3)';
     let scoreBg = 'var(--bg2)';
     let statusText = health_status || 'Fair';
+    const statusLower = statusText.toLowerCase();
 
-    if (statusText.toLowerCase() === 'excellent') {
+    if (statusLower === 'excellent') {
         scoreColor = 'var(--success)';
         scoreBg = 'var(--success-light)';
-    } else if (statusText.toLowerCase() === 'good') {
+    } else if (statusLower === 'good') {
         scoreColor = 'var(--info)';
         scoreBg = 'var(--info-light)';
-    } else if (statusText.toLowerCase() === 'fair') {
+    } else if (statusLower === 'fair' || statusLower === 'average') {
         scoreColor = 'var(--warning)';
         scoreBg = 'var(--warning-light)';
-    } else if (statusText.toLowerCase() === 'poor') {
+    } else if (statusLower === 'poor') {
         scoreColor = 'var(--error)';
         scoreBg = 'var(--error-light)';
     }
+
+    // Circular Progress Math
+    const radius = 76;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - (animatedScore / 100) * circumference;
+
+    // Helper for Semantic Breakdown Bars
+    const getBarColor = (percent) => {
+        if (percent >= 80) return 'var(--success)';
+        if (percent >= 60) return 'var(--info)';
+        if (percent >= 40) return 'var(--warning)';
+        return 'var(--error)';
+    };
+
+    // Safely parse metrics object
+    const metricsList = metrics ? Object.values(metrics) : [];
 
     return (
         <div style={styles.layout}>
@@ -465,35 +613,54 @@ export default function FinancialHealthResult() {
             <main style={styles.main}>
                 {/* TOP NAVBAR */}
                 <header style={styles.topbar}>
-                    <div style={{ fontWeight: '600', color: 'var(--navy)' }}>
+                    <div style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '18px' }}>
                         Analysis Report
                     </div>
                     <div style={styles.topbarRight}>
-                        <span style={{ color: 'var(--text2)', fontSize: '14px' }}>{today}</span>
+                        <span style={{ color: 'var(--text2)', fontSize: '14px', fontWeight: '500' }}>{today}</span>
                         <button style={styles.logoutBtn} onClick={logout}>Logout</button>
                     </div>
                 </header>
 
                 {/* CONTENT */}
                 <div style={styles.content}>
-                    
+
                     {/* PERSONA CARD & SCORE ROW */}
                     <div style={styles.grid2}>
                         {/* SCORE CARD */}
                         <div style={{ ...styles.card, ...styles.scoreCard }}>
-                            <h3 style={{ fontSize: '16px', color: 'var(--text2)', marginBottom: '16px', fontWeight: 'bold' }}>
+                            <h3 style={styles.sectionTitle}>
                                 Financial Health Score
                             </h3>
-                            <div style={{ ...styles.scoreGauge, border: `6px solid ${scoreColor}` }}>
-                                <span style={{ ...styles.scoreNumber, color: scoreColor }}>
-                                    {ml_health_score}
-                                </span>
-                                <span style={styles.scoreLabel}>out of 100</span>
+
+                            <div style={styles.scoreRingContainer}>
+                                <svg width="180" height="180" style={{ transform: 'rotate(-90deg)' }}>
+                                    <circle cx="90" cy="90" r={radius} stroke="var(--bg2)" strokeWidth="12" fill="none" />
+                                    <circle
+                                        cx="90"
+                                        cy="90"
+                                        r={radius}
+                                        stroke={scoreColor}
+                                        strokeWidth="12"
+                                        fill="none"
+                                        strokeDasharray={circumference}
+                                        strokeDashoffset={strokeDashoffset}
+                                        style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)', strokeLinecap: 'round' }}
+                                    />
+                                </svg>
+                                <div style={styles.scoreInner}>
+                                    <span style={{ ...styles.scoreNumber, color: scoreColor }}>
+                                        {Number(ml_health_score).toFixed(1)}
+                                    </span>
+                                    <span style={styles.scoreMax}>/ 100</span>
+                                </div>
                             </div>
-                            <div style={{ ...styles.statusBadge, backgroundColor: scoreBg, color: scoreColor, marginBottom: '12px' }}>
+
+                            <div style={{ ...styles.statusBadge, backgroundColor: scoreBg, color: scoreColor }}>
                                 {statusText}
                             </div>
-                            <span style={{ fontSize: '11px', color: 'var(--text3)' }}>
+
+                            <span style={styles.engineVersion}>
                                 Engine Version: {model_version}
                             </span>
                         </div>
@@ -501,21 +668,44 @@ export default function FinancialHealthResult() {
                         {/* PERSONA CARD */}
                         {persona && (
                             <div style={{ ...styles.card, ...styles.personaCard }}>
-                                <div style={styles.personaTitle}>
-                                    <span>{persona.emoji}</span>
-                                    <span>{persona.title}</span>
+                                <div style={styles.personaHeader}>
+                                    <div style={styles.personaEmoji}>{persona.emoji || '👤'}</div>
+                                    <div style={styles.personaTitle}>{persona.title}</div>
                                 </div>
-                                <p style={{ fontSize: '14px', color: 'var(--text)', lineHeight: '1.5' }}>
+                                <p style={styles.personaDesc}>
                                     {persona.description}
                                 </p>
                                 <div style={styles.personaDetailsGrid}>
-                                    <div><strong>💪 Primary Strength:</strong> {persona.strength}</div>
-                                    <div><strong>🎯 Focus Area:</strong> {persona.focus_area}</div>
-                                    <div><strong>⚡ Risk Profile:</strong> {persona.risk_level}</div>
+                                    <div style={styles.personaDetailRow}>
+                                        <span style={{ color: 'var(--text2)' }}>Primary Strength</span>
+                                        <strong style={{ color: 'var(--success)' }}>{persona.strength}</strong>
+                                    </div>
+                                    <div style={styles.personaDetailRow}>
+                                        <span style={{ color: 'var(--text2)' }}>Focus Area</span>
+                                        <strong style={{ color: 'var(--navy)' }}>{persona.focus_area}</strong>
+                                    </div>
+                                    <div style={styles.personaDetailRow}>
+                                        <span style={{ color: 'var(--text2)' }}>Risk Profile</span>
+                                        <strong style={{ color: 'var(--warning)' }}>{persona.risk_level}</strong>
+                                    </div>
                                 </div>
                                 <div style={styles.actionRow}>
-                                    <button style={styles.btnOutline} onClick={handleBack}>Recalculate</button>
-                                    <button style={styles.btnPrimary} onClick={handleDashboard}>Dashboard</button>
+                                    <button
+                                        style={styles.btnOutline}
+                                        onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--bg2)'}
+                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--white)'}
+                                        onClick={handleBack}
+                                    >
+                                        Recalculate
+                                    </button>
+                                    <button
+                                        style={styles.btnPrimary}
+                                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+                                        onClick={handleDashboard}
+                                    >
+                                        Dashboard
+                                    </button>
                                 </div>
                             </div>
                         )}
@@ -529,8 +719,7 @@ export default function FinancialHealthResult() {
                                 <h3 style={styles.sectionTitle}>🎯 Score Breakdown</h3>
                                 <div style={styles.progressBarContainer}>
                                     {Object.entries(score_breakdown).map(([category, value]) => {
-                                        // Assume breakdown values are out of 20
-                                        const percentage = Math.round((value / 20) * 100);
+                                        const percentage = Math.min(100, Math.round((value / 20) * 100)); // Assuming max 20 per category
                                         return (
                                             <div key={category} style={styles.progressBarItem}>
                                                 <div style={styles.progressBarLabelRow}>
@@ -538,11 +727,11 @@ export default function FinancialHealthResult() {
                                                     <span>{value} / 20</span>
                                                 </div>
                                                 <div style={styles.progressBarTrack}>
-                                                    <div 
-                                                        style={{ 
-                                                            ...styles.progressBarFill, 
-                                                            width: `${percentage}%`,
-                                                            backgroundColor: percentage >= 75 ? 'var(--success)' : (percentage >= 50 ? 'var(--navy2)' : 'var(--saffron)')
+                                                    <div
+                                                        style={{
+                                                            ...styles.progressBarFill,
+                                                            width: animateBars ? `${percentage}%` : '0%',
+                                                            backgroundColor: getBarColor(percentage)
                                                         }}
                                                     />
                                                 </div>
@@ -557,16 +746,26 @@ export default function FinancialHealthResult() {
                         {ai_summary && (
                             <div style={styles.card}>
                                 <h3 style={styles.sectionTitle}>💬 Executive Summary</h3>
-                                <details 
+                                <details
                                     style={styles.summaryDetails}
                                     open={summaryExpanded}
                                     onToggle={(e) => setSummaryExpanded(e.target.open)}
                                 >
                                     <summary style={styles.summarySummary}>
-                                        {summaryExpanded ? "Click to collapse report summary" : "Click to expand report summary"}
+                                        <span>{summaryExpanded ? "Hide AI Report" : "Read AI Financial Report"}</span>
+                                        <span style={{ color: 'var(--saffron)', fontSize: '20px' }}>
+                                            {summaryExpanded ? '−' : '+'}
+                                        </span>
                                     </summary>
-                                    <div style={styles.summaryText}>
-                                        {ai_summary}
+                                    <div style={styles.summaryTextContainer}>
+                                        {ai_summary.split('\n').map((paragraph, i) => {
+                                            // Remove all asterisk characters (*) used for markdown bolding/italics
+                                            const cleanParagraph = paragraph.replace(/\*/g, '').trim();
+
+                                            return cleanParagraph ? (
+                                                <p key={i} style={styles.summaryParagraph}>{cleanParagraph}</p>
+                                            ) : null;
+                                        })}
                                     </div>
                                 </details>
                             </div>
@@ -574,44 +773,54 @@ export default function FinancialHealthResult() {
                     </div>
 
                     {/* SELF-DESCRIBING METRIC CARDS */}
-                    {metrics && metrics.length > 0 && (
+                    {metricsList.length > 0 && (
                         <div>
-                            <h3 style={{ ...styles.sectionTitle, margin: '16px 0' }}>📊 Detailed Metrics</h3>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
-                                {metrics.map((metric, idx) => {
+                            <h3 style={styles.sectionTitle}>📊 Detailed Metrics</h3>
+                            <div style={styles.metricGrid}>
+                                {metricsList.map((metric, idx) => {
                                     let badgeColor = 'var(--text2)';
                                     let badgeBg = 'var(--bg2)';
-                                    if (metric.severity === 'success') {
+                                    const severity = metric.severity?.toLowerCase();
+
+                                    if (severity === 'success' || severity === 'excellent' || severity === 'good') {
                                         badgeColor = 'var(--success)';
                                         badgeBg = 'var(--success-light)';
-                                    } else if (metric.severity === 'info') {
+                                    } else if (severity === 'info') {
                                         badgeColor = 'var(--info)';
                                         badgeBg = 'var(--info-light)';
-                                    } else if (metric.severity === 'error') {
+                                    } else if (severity === 'error' || severity === 'poor') {
                                         badgeColor = 'var(--error)';
                                         badgeBg = 'var(--error-light)';
-                                    } else if (metric.severity === 'warning') {
-                                        badgeColor = 'var(--saffron)';
-                                        badgeBg = 'var(--saffron-lt)';
+                                    } else if (severity === 'warning' || severity === 'average' || severity === 'fair') {
+                                        badgeColor = 'var(--warning)';
+                                        badgeBg = 'var(--warning-light)';
                                     }
+
                                     return (
-                                        <div key={idx} style={styles.metricCard}>
+                                        <div
+                                            key={idx}
+                                            style={styles.metricCard}
+                                            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+                                            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                                        >
                                             <div style={styles.metricHeader}>
                                                 <span style={styles.metricName}>{metric.name}</span>
-                                                <span style={{ 
-                                                    fontSize: '11px', 
-                                                    padding: '2px 8px', 
-                                                    borderRadius: '4px', 
-                                                    color: badgeColor, 
+                                                <span style={{
+                                                    fontSize: '11px',
+                                                    padding: '4px 10px',
+                                                    borderRadius: '20px',
+                                                    color: badgeColor,
                                                     backgroundColor: badgeBg,
-                                                    fontWeight: 'bold'
+                                                    fontWeight: '700',
+                                                    letterSpacing: '0.5px',
+                                                    textTransform: 'uppercase'
                                                 }}>
                                                     {metric.status}
                                                 </span>
                                             </div>
                                             <div style={styles.metricValues}>
-                                                <span style={styles.metricCurrent}>{metric.value}{metric.unit}</span>
-                                                <span style={styles.metricRecommended}>Target: {metric.recommended}</span>
+                                                <span style={styles.metricCurrent}>{metric.value} {metric.unit}</span>
+                                                <span style={styles.metricRecommended}>Target: {metric.recommended} {metric.unit}</span>
                                             </div>
                                             <div style={styles.metricDescription}>{metric.description}</div>
                                         </div>
@@ -623,27 +832,27 @@ export default function FinancialHealthResult() {
 
                     {/* STRENGTHS & WEAKNESSES */}
                     <div style={styles.grid2}>
-                        {/* STRENGTHS - RENDER AS GREEN CHECKLIST */}
+                        {/* STRENGTHS */}
                         <div style={styles.card}>
                             <h3 style={styles.sectionTitle}>✔️ Key Strengths</h3>
                             <ul style={styles.bulletList}>
                                 {strengths && strengths.length > 0 ? (
                                     strengths.map((str, idx) => (
                                         <li key={idx} style={styles.bulletItem}>
-                                            <span style={styles.checkIcon}>✔</span>
+                                            <span style={styles.checkIcon}>✓</span>
                                             <span>{str}</span>
                                         </li>
                                     ))
                                 ) : (
-                                    <li style={styles.bulletItem}>None identified.</li>
+                                    <div style={styles.emptyState}>No specific strengths identified in current profile.</div>
                                 )}
                             </ul>
                         </div>
 
-                        {/* WEAKNESSES - RENDER AS WARNING CARDS */}
+                        {/* WEAKNESSES */}
                         <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>⚠️ Area of Improvements</h3>
-                            <div>
+                            <h3 style={styles.sectionTitle}>⚠️ Areas for Improvement</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 {weaknesses && weaknesses.length > 0 ? (
                                     weaknesses.map((weak, idx) => (
                                         <div key={idx} style={styles.warningCard}>
@@ -651,7 +860,7 @@ export default function FinancialHealthResult() {
                                         </div>
                                     ))
                                 ) : (
-                                    <div style={{ color: 'var(--text2)', fontSize: '14px' }}>No major weaknesses identified. Good job!</div>
+                                    <div style={styles.emptyState}>No major weaknesses identified. Great job!</div>
                                 )}
                             </div>
                         </div>
@@ -659,19 +868,11 @@ export default function FinancialHealthResult() {
 
                     {/* RISKS (HIDE IF EMPTY) */}
                     {risks && risks.length > 0 && (
-                        <div style={styles.card}>
+                        <div style={{ ...styles.card, border: '1px solid var(--error-light)' }}>
                             <h3 style={{ ...styles.sectionTitle, color: 'var(--error)' }}>🚨 Critical Risks Identified</h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 {risks.map((risk, idx) => (
-                                    <div key={idx} style={{ 
-                                        backgroundColor: 'var(--error-light)', 
-                                        color: 'var(--error)', 
-                                        padding: '14px', 
-                                        borderRadius: 'var(--radius-sm)',
-                                        fontSize: '14px',
-                                        borderLeft: '4px solid var(--error)',
-                                        fontWeight: '500'
-                                    }}>
+                                    <div key={idx} style={styles.riskCard}>
                                         {risk}
                                     </div>
                                 ))}
@@ -679,40 +880,61 @@ export default function FinancialHealthResult() {
                         </div>
                     )}
 
-                    {/* DETAILED ACTION CARD RECOMMENDATIONS */}
+                    {/* DETAILED RECOMMENDATIONS */}
                     {recommendations && recommendations.length > 0 && (
-                        <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>💡 Personalized Recommendations</h3>
-                            <div>
+                        <div style={{ ...styles.card, padding: '40px' }}>
+                            <h3 style={styles.sectionTitle}>💡 Personalized Action Plan</h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '24px' }}>
                                 {recommendations.map((rec, idx) => {
-                                    let priorityColor = 'var(--text2)';
-                                    if (rec.priority === 'High') priorityColor = 'var(--error)';
-                                    else if (rec.priority === 'Medium') priorityColor = 'var(--saffron)';
-                                    else if (rec.priority === 'Low') priorityColor = 'var(--success)';
-                                    
+                                    const priority = rec.priority?.toLowerCase();
+                                    let pColor = 'var(--text2)';
+                                    let pBg = 'var(--bg2)';
+
+                                    if (priority === 'high') {
+                                        pColor = 'var(--error)';
+                                        pBg = 'var(--error-light)';
+                                    } else if (priority === 'medium') {
+                                        pColor = 'var(--warning)';
+                                        pBg = 'var(--warning-light)';
+                                    } else if (priority === 'low') {
+                                        pColor = 'var(--success)';
+                                        pBg = 'var(--success-light)';
+                                    }
+
                                     return (
                                         <div key={idx} style={styles.recommendationCard}>
                                             <div style={styles.recHeader}>
                                                 <span style={styles.recTitle}>{rec.title}</span>
-                                                <span style={{ 
-                                                    fontSize: '11px', 
-                                                    fontWeight: 'bold', 
-                                                    color: priorityColor,
-                                                    textTransform: 'uppercase'
+                                                <span style={{
+                                                    fontSize: '11px',
+                                                    fontWeight: '700',
+                                                    color: pColor,
+                                                    backgroundColor: pBg,
+                                                    padding: '4px 10px',
+                                                    borderRadius: '20px',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px'
                                                 }}>
                                                     {rec.priority} Priority
                                                 </span>
                                             </div>
-                                            <p style={{ fontSize: '13px', color: 'var(--text)', margin: '4px 0' }}>
+                                            <p style={styles.recReason}>
                                                 {rec.reason}
                                             </p>
-                                            <div style={styles.recValues}>
-                                                <div><strong>Current Allocation:</strong> {rec.current_value}</div>
-                                                <div><strong>Recommended Allocation:</strong> {rec.recommended_value}</div>
+                                            <div style={styles.recValuesGrid}>
+                                                <div style={styles.recValueBlock}>
+                                                    <span style={styles.recValueLabel}>Current</span>
+                                                    <span style={styles.recValueData}>{rec.current_value}</span>
+                                                </div>
+                                                <div style={styles.recValueBlock}>
+                                                    <span style={styles.recValueLabel}>Recommended</span>
+                                                    <span style={{ ...styles.recValueData, color: 'var(--navy)' }}>{rec.recommended_value}</span>
+                                                </div>
                                             </div>
-                                            <p style={{ fontSize: '12px', color: 'var(--text3)', fontStyle: 'italic', marginTop: '6px' }}>
-                                                <strong>Impact:</strong> {rec.impact}
-                                            </p>
+                                            <div style={styles.recImpact}>
+                                                <span>⚡</span>
+                                                <span>Impact: {rec.impact}</span>
+                                            </div>
                                         </div>
                                     );
                                 })}
