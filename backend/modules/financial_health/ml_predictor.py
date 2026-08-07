@@ -57,8 +57,26 @@ class MLPredictorService:
 
         feature_dict = {
             "persona": ml_persona,
-            **profile.model_dump(),
-            **engineered_features.model_dump(),
+
+            "age": profile.age,
+            "employment_status": profile.employment_status,
+            "monthly_income": profile.monthly_income,
+            "monthly_expenses": profile.monthly_expenses,
+            "monthly_savings": profile.monthly_savings,
+            "emergency_fund": profile.emergency_fund,
+            "total_debt": profile.total_debt,
+            "investments": profile.investments,
+            "insurance_cover": profile.insurance_cover,
+            "financial_goal": profile.financial_goal,
+
+            "savings_rate": engineered_features.savings_rate,
+            "expense_ratio": engineered_features.expense_ratio,
+            "disposable_income": engineered_features.disposable_income,
+            "debt_to_income_ratio": engineered_features.debt_to_income_ratio,
+            "emergency_fund_months": engineered_features.emergency_fund_months,
+            "investment_ratio": engineered_features.investment_ratio,
+            "insurance_ratio": engineered_features.insurance_ratio,
+            "net_monthly_cashflow": engineered_features.net_monthly_cashflow,
         }
 
         # ============================================
