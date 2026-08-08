@@ -46,6 +46,41 @@ export const financialHealthService = {
     }
   },
 
+
+    /**
+     * Send a question to the FinStack AI RAG chatbot.
+     * Uses the current financial health report as context.
+     */
+    async chat(question, report) {
+        try {
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
+            if (!session?.access_token) {
+                throw new Error('User is not authenticated.');
+            }
+
+            const response = await axios.post(
+                `${API_URL}/financial-health/chat`,
+                {
+                    question: question,
+                    report: report,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                }
+            );
+
+            return response.data;
+        } catch (error) {
+            console.error('Error getting AI chatbot response:', error);
+
+            throw error;
+        }
+    },
   /**
    * Generate a mock response matching the new backend schema based on the input data.
    */

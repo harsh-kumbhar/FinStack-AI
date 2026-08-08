@@ -3,12 +3,15 @@ from fastapi import Depends
 from common.database import get_current_user
 from modules.financial_health.history_service import HistoryService
 from fastapi import HTTPException
+from modules.financial_health.rag.chatbot import FinancialChatbot
 
 from modules.financial_health.schema import (
     FinancialProfileData,
     PredictionResult,
     HistoryReport,
     HistoryReportList,
+    ChatRequest,
+    ChatResponse,
 )
 
 from modules.financial_health.ml_predictor import (
@@ -128,3 +131,26 @@ def delete_report(
     return {
         "message": "Report deleted successfully"
     }
+@router.post(
+    "/chat",
+    response_model=ChatResponse,
+)
+def financial_health_chat(
+    request: ChatRequest,
+    user=Depends(get_current_user),
+):
+
+    if not request.question.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Question cannot be empty.",
+        )
+
+    answer = FinancialChatbot.chat(
+        question=request.question,
+        report=request.report,
+    )
+
+    return ChatResponse(
+        answer=answer
+    )

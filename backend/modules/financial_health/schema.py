@@ -193,3 +193,11 @@ class HistoryReport(BaseModel):
 class HistoryReportList(BaseModel):
 
     reports: List[HistoryReport]
+
+class ChatRequest(BaseModel):
+    question: str
+    report: dict
+
+
+class ChatResponse(BaseModel):
+    answer: str
