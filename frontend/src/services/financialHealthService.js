@@ -81,6 +81,36 @@ export const financialHealthService = {
             throw error;
         }
     },
+    /**
+         * Download the Financial Health Report as a PDF.
+         */
+    async downloadFinancialHealthReport(report) {
+        try {
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
+            if (!session?.access_token) {
+                throw new Error('User is not authenticated.');
+            }
+
+            const response = await axios.post(
+                `${API_URL}/financial-health/report/pdf`,
+                { report: report },
+                {
+                    headers: {
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                    responseType: "blob", // Crucial for receiving the PDF file
+                }
+            );
+
+            return response.data;
+        } catch (error) {
+            console.error('Error downloading PDF report:', error);
+            throw error;
+        }
+    },
   /**
    * Generate a mock response matching the new backend schema based on the input data.
    */

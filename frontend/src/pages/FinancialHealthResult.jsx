@@ -639,6 +639,8 @@ export default function FinancialHealthResult() {
     const [chatMessage, setChatMessage] = useState('');
     const [chatMessages, setChatMessages] = useState([]);
     const [chatLoading, setChatLoading] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadError, setDownloadError] = useState('');
 
     const { prediction, inputs } = location.state || {};
 
@@ -673,7 +675,7 @@ export default function FinancialHealthResult() {
 
         try {
             const data = await financialHealthService.chat(question, prediction);
-            
+
             setChatMessages((prev) => [
                 ...prev,
                 { role: 'assistant', content: data.answer }
@@ -693,6 +695,36 @@ export default function FinancialHealthResult() {
     const handleChatSubmit = (e) => {
         e?.preventDefault();
         sendChatMessage(chatMessage);
+    };
+
+    const handleDownloadReport = async () => {
+        setIsDownloading(true);
+        setDownloadError('');
+        try {
+            const blob = await financialHealthService.downloadFinancialHealthReport(prediction);
+
+            // Create a temporary object URL for the blob
+            const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+
+            // Set the dynamic filename
+            const filename = `FinStack_Financial_Report_${prediction.report_id || 'Latest'}.pdf`;
+            link.setAttribute('download', filename);
+
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download error:', error);
+            setDownloadError('Unable to generate financial report. Please try again.');
+        } finally {
+            setIsDownloading(false);
+        }
     };
 
     // Early return if no data
@@ -830,9 +862,30 @@ export default function FinancialHealthResult() {
                                         <strong style={{ color: 'var(--warning)' }}>{persona.risk_level}</strong>
                                     </div>
                                 </div>
-                                <div style={styles.actionRow}>
-                                    <button style={styles.btnOutline} onClick={handleBack}>Recalculate</button>
-                                    <button style={styles.btnPrimary} onClick={handleDashboard}>Dashboard</button>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '32px', width: '100%' }}>
+                                    {downloadError && (
+                                        <div style={{ color: 'var(--error)', fontSize: '13px', textAlign: 'center', fontWeight: 'bold' }}>
+                                            {downloadError}
+                                        </div>
+                                    )}
+                                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                                        <button style={styles.btnOutline} onClick={handleBack}>Recalculate</button>
+
+                                        <button
+                                            style={{
+                                                ...styles.btnOutline,
+                                                backgroundColor: isDownloading ? 'var(--bg2)' : 'var(--white)',
+                                                opacity: isDownloading ? 0.7 : 1
+                                            }}
+                                            onClick={handleDownloadReport}
+                                            disabled={isDownloading}
+                                        >
+                                            {isDownloading ? 'Generating Report...' : '📥 Download PDF'}
+                                        </button>
+
+                                        <button style={styles.btnPrimary} onClick={handleDashboard}>Dashboard</button>
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -1021,7 +1074,6 @@ export default function FinancialHealthResult() {
                 </div>
 
                 {/* --- FLOATING CHAT WIDGET --- */}
-                {/* --- FLOATING CHAT WIDGET --- */}
                 <button
                     style={{
                         ...styles.chatFab,
@@ -1052,7 +1104,7 @@ export default function FinancialHealthResult() {
                             <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 🤖 FinStack AI Advisor
                             </span>
-                            <button 
+                            <button
                                 onClick={() => setIsChatOpen(false)}
                                 style={{ background: 'none', border: 'none', color: 'var(--white)', cursor: 'pointer', fontSize: '18px' }}
                             >
@@ -1072,8 +1124,8 @@ export default function FinancialHealthResult() {
                                             "How can I build a better emergency fund?",
                                             "What are my biggest financial risks right now?"
                                         ].map((question, i) => (
-                                            <button 
-                                                key={i} 
+                                            <button
+                                                key={i}
                                                 style={styles.suggestedPill}
                                                 onClick={() => sendChatMessage(question)}
                                                 onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}

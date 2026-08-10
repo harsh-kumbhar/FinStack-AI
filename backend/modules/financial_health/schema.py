@@ -201,3 +201,6 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
+
+class PDFReportRequest(BaseModel):
+    report: PredictionResult
