@@ -7,6 +7,7 @@ import FinancialHealthAnalyzer from "./pages/FinancialHealthAnalyzer";
 import FinancialHealthResult from "./pages/FinancialHealthResult";
 import SmartFeed from "./pages/SmartFeed";
 import NotFound from "./pages/NotFound";
+import FinancialJourney from './pages/FinancialJourney';
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -59,6 +60,11 @@ function App() {
                     </ProtectedRoute>
                 }
             />
+            <Route path="/financial-journey" element={
+                <ProtectedRoute>
+                    <FinancialJourney />
+                </ProtectedRoute>
+            } />
 
             <Route path="*" element={<NotFound />} />
         </Routes>

@@ -5,6 +5,7 @@ from common.database import get_current_user
 from modules.financial_health.history_service import HistoryService
 from fastapi import HTTPException
 from modules.financial_health.rag.chatbot import FinancialChatbot
+from modules.financial_health.journey_service import JourneyService
 from modules.financial_health.pdf_service import (
     FinancialHealthPDFService,
     
@@ -18,6 +19,7 @@ from modules.financial_health.schema import (
     ChatRequest,
     ChatResponse,
     PDFReportRequest,
+    FinancialJourney,
 )
 
 from modules.financial_health.ml_predictor import (
@@ -137,6 +139,27 @@ def delete_report(
     return {
         "message": "Report deleted successfully"
     }
+
+@router.get(
+    "/journey",
+    response_model=FinancialJourney,
+)
+def get_financial_journey(
+    user=Depends(get_current_user),
+):
+    print("\n===== JOURNEY DEBUG =====")
+    print("Authenticated User ID:", user.id)
+
+    reports = HistoryService.get_user_reports(user.id)
+
+    print("Reports Found:", len(reports))
+    print(
+        "Scores:",
+        [r.get("final_health_score") for r in reports]
+    )
+    print("=========================\n")
+
+    return JourneyService.build_journey(reports)
 @router.post(
     "/chat",
     response_model=ChatResponse,

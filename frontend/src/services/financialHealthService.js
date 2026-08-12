@@ -15,6 +15,8 @@ export const financialHealthService = {
             data: { session },
         } = await supabase.auth.getSession();
 
+        console.log(session?.access_token);
+
         const response = await axios.post(
             `${API_URL}/financial-health/predict`,
             {
@@ -111,6 +113,27 @@ export const financialHealthService = {
             throw error;
         }
     },
+
+    async getFinancialJourney() {
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session?.access_token) {
+            throw new Error("User is not authenticated");
+        }
+
+        const response = await axios.get(
+            `${API_URL}/financial-health/journey`,
+            {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            }
+        );
+
+        return response.data;
+    },   // <-- THIS COMMA
   /**
    * Generate a mock response matching the new backend schema based on the input data.
    */

@@ -873,6 +873,13 @@ export default function FinancialHealthResult() {
                                         <button style={styles.btnOutline} onClick={handleBack}>Recalculate</button>
 
                                         <button
+                                            style={{ ...styles.btnOutline, backgroundColor: '#f8fafc' }}
+                                            onClick={() => navigate('/financial-journey')}
+                                        >
+                                            📈 View Financial Journey
+                                        </button>
+
+                                        <button
                                             style={{
                                                 ...styles.btnOutline,
                                                 backgroundColor: isDownloading ? 'var(--bg2)' : 'var(--white)',
