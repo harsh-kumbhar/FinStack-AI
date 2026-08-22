@@ -109,6 +109,22 @@ Status
 
 ---
 
+## Tax Estimator
+
+### Completed
+
+- Module specification created.
+- Deterministic calculation engine foundation implemented.
+- Centralized, version-controlled tax rules implemented (FY 2024-25).
+- Comprehensive unit tests written and verified against authoritative sources.
+- Technical Decision Log created.
+
+Status
+
+🟡 In Progress
+
+---
+
 ## Machine Learning
 
 ### Completed
