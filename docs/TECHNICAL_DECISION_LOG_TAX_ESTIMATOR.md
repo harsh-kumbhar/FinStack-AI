@@ -76,4 +76,70 @@ Floating-point inaccuracies are unacceptable. Rounding to the nearest 10 is lega
 Comprehensive boundary testing, unit testing of the calculation engine, and domain validations using `pytest`.
 ### Reason
 As mandated by the specification, the accuracy must be verified. 
-*Note: This strictly covers calculation unit tests. API, Database, and Frontend E2E testing will be implemented in their respective future batches.*
+*Note: Calculation unit tests (89) and API/service/database integration tests (28) are implemented. Frontend E2E testing will be implemented in Batch 3.*
+
+## 10. API Design (Batch 2)
+### Decision
+Three endpoints exposed via `POST /tax-estimator/calculate`, `GET /tax-estimator/history`, and `GET /tax-estimator/history/{assessment_id}`. All endpoints require authentication via `Depends(get_current_user)`.
+### Alternatives
+Single combined endpoint, or admin-level endpoints.
+### Reason
+Follows existing project convention (e.g., `/financial-health/predict`, `/financial-health/history`). Separation of calculate vs. history read is clean REST design.
+### Impact
+Clean, consistent API surface matching existing FinStack patterns.
+
+## 11. Service Layer (Batch 2)
+### Decision
+`TaxEstimatorService` class with static methods handles all application concerns: building domain input, invoking the deterministic engine, persisting to Supabase, retrieving history, and enforcing ownership.
+### Reason
+Router remains thin (no business logic). Engine remains pure (no database/HTTP concerns). Service orchestrates between them.
+
+## 12. Database Design (Batch 2)
+### Decision
+Dedicated `tax_assessments` table with normalized columns for all inputs, both regime breakdowns, recommendation, and timestamps. UUID primary key, `user_id` FK to `auth.users`, `created_at`/`updated_at` with trigger. RLS policies for SELECT/INSERT/UPDATE/DELETE restrict rows to `auth.uid() = user_id`.
+### Alternatives
+JSON/JSONB blob for breakdown, or storing in `financial_health_reports`.
+### Reason
+Normalized columns allow direct SQL queries on any breakdown field. Separate table keeps Tax Estimator independently usable per specification. RLS follows existing project pattern (same as `financial_health_report`, `smartfeed_preference`).
+### Impact
+Migration script at `database/migration_tax_estimator.sql`. Must be applied to Supabase before live API use.
+
+## 13. Authentication & Ownership (Batch 2)
+### Decision
+User identity is ALWAYS derived from `get_current_user(authorization: str = Header(...))` which calls `supabase.auth.get_user(token)`. The router passes `user.id` to the service. No client-supplied `user_id` is ever trusted.
+### Reason
+Specification mandates server-derived ownership. Existing project convention uses this exact pattern in `/financial-health/predict`.
+
+## 14. User Isolation (Batch 2)
+### Decision
+Dual-layer isolation: (1) Service-layer `.eq("user_id", user_id)` filtering on all queries, plus ownership check returning 403 on detail access. (2) Database-layer RLS policies restricting all operations to `auth.uid() = user_id`.
+### Reason
+Defense in depth. Service uses `SUPABASE_SERVICE_ROLE_KEY` which bypasses RLS, so service-layer filtering is the primary enforcement. RLS provides the secondary safety net for any direct database access.
+
+## 15. History Pagination (Batch 2)
+### Decision
+V1 history is intentionally **non-paginated**. All assessments for the authenticated user are returned ordered by `created_at DESC`.
+### Alternatives
+Limit/offset or cursor-based pagination.
+### Reason
+No existing FinStack endpoints implement pagination (e.g., `/financial-health/history` returns all records). For V1 with expected low assessment volume per user, simplicity is preferred. Pagination can be added in V2 if needed.
+
+## 16. Error Handling (Batch 2)
+### Decision
+Validation errors return 422 (Pydantic). Unsupported FY returns 400. Auth failures return 401. Cross-user access returns 403. Not-found returns 404. Internal errors return 500 with a generic message. No stack traces, SQL errors, or secrets are ever exposed.
+### Reason
+Follows FastAPI conventions and project security requirements.
+
+## 17. API Testing Strategy (Batch 2)
+### Decision
+28 integration tests using `FastAPI TestClient` + `SQLiteSupabaseMock`. The mock replaces only the Supabase network transport with an in-memory SQLite database. All service logic, engine logic, validation, error handling, and response mapping execute for real.
+### What is genuinely tested
+- Full HTTP request → router → service → engine → database → response pipeline
+- Real SQL INSERT/SELECT/filtering by user_id
+- Real ownership enforcement (403 on cross-user access)
+- Real tax calculations (engine values verified against Batch 1 reference cases)
+- Real Pydantic validation (negative inputs, missing fields)
+### What is mocked
+- Only the Supabase HTTP client (replaced with SQLite in-memory DB)
+- Authentication dependency (overridden via FastAPI `dependency_overrides`)
+
