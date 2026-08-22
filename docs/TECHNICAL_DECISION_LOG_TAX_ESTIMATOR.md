@@ -8,82 +8,72 @@ FY 2023-24 (which is in the past, less useful for active planning), FY 2025-26 (
 ### Reason
 FY 2024-25 is the most current and stable, well-documented tax year for active financial planning that individuals are typically filing for or estimating for.
 ### Evidence
-Income Tax Department, Government of India (https://incometaxindia.gov.in/).
+Income Tax Department, Government of India (https://www.incometax.gov.in/iec/foportal/help/individual/return-applicable-1 and https://incometaxindia.gov.in/Tutorials/1.%20Tax%20rates.pdf).
 ### Impact
-Rules for 2024-25 are strictly applied. If a user queries for another year, the engine will raise a validation error, preventing hallucinated calculations.
+Rules for 2024-25 are strictly applied. If a user queries for another year, the engine will raise a validation error.
 
 ## 2. Authoritative Tax Sources
 ### Decision
 Income Tax Department official portal and Finance Act 2024 documents.
 ### Alternatives
-Third-party blog sites (ClearTax, BankBazaar), which can occasionally have typos or outdated summaries.
+Third-party blog sites (ClearTax, BankBazaar), which can occasionally have typos.
 ### Reason
 Strict compliance with the specification requires verified primary sources.
 ### Evidence
 Slabs and cess were verified directly against `incometaxindia.gov.in`.
 ### Impact
-The calculations can be fully trusted and legally defended as matching the tax laws exactly.
+The calculations can be fully trusted as matching the tax laws exactly.
 
-## 3. Supported Input Categories
+## 3. Supported Input Categories & Deduction Capping
 ### Decision
-V1 supports Gross Salary, Other Income (e.g., interest), and Section 80C, 80D, 80TTA deductions.
+V1 supports Gross Salary, Other Income, and Section 80C, 80D, 80TTA deductions. Invalid inputs (negative numbers) are rejected via Pydantic validators. However, if a user enters a valid deduction amount that exceeds statutory limits (e.g., 2,00,000 for 80C), the engine silently caps it to the statutory maximum (1,50,000) during calculation.
 ### Alternatives
-Supporting all 50+ sections of Chapter VI-A.
+Rejecting the request entirely if the user inputs `80C > 1.5L`.
 ### Reason
-This covers 90% of a standard retail taxpayer's use case and allows us to validate the complex dual-regime comparison robustly before adding edge-case deductions like 80EEA.
+Capping is standard UX in financial calculators; it allows users to simply dump their total investments into the field without needing to manually remember the cap.
 ### Impact
-Keeps the engine deterministic and easy to thoroughly test.
+Keeps the engine deterministic, resilient, and user-friendly.
 
 ## 4. Rule Representation
 ### Decision
 Rules are localized in dedicated python modules per financial year (`backend/modules/tax_estimator/rules/fy_2024_25.py`) and loaded via a central registry.
 ### Alternatives
-Database-driven rules or JSON-based rules.
+Database-driven rules.
 ### Reason
-Python modules provide strong typing, easy imports, version control tracking, and immediate execution speed without DB overhead. The registry pattern supports OCP (Open-Closed Principle) when adding new years.
+Python modules provide strong typing, version control tracking, and immediate execution speed. 
 ### Impact
 Extremely fast, stateless calculation engine.
 
 ## 5. Calculation Architecture
 ### Decision
 The calculation engine is a pure, deterministic function `calculate_tax` taking Pydantic domain models.
+
+## 6. Regime Handling & 87A Marginal Relief
+### Decision
+The engine calculates both Old and New regimes simultaneously. For the New Regime, marginal relief for the 87A Rebate is explicitly implemented (capping the tax to the income exceeding 7L). The Old regime does not have 87A marginal relief in law.
 ### Alternatives
-Stateful classes or closely coupling the logic with FastAPI request models.
+Ignoring marginal relief.
 ### Reason
-Pure functions are trivial to unit test, debug, and execute safely outside the context of a web request.
+Marginal relief is highly relevant for users hovering just above 7L in the New Regime, a key target audience.
+
+## 7. Surcharge Explicit Scope & Exclusions
+### Decision
+Surcharge is implemented using strict percentage thresholds (e.g., >50L: 10%, >1Cr: 15%, >2Cr: 25%, >5Cr: 37% [Old] / 25% [New]).
+**Explicit Exclusion:** Marginal Relief for Surcharge is *intentionally excluded* in V1. 
+### Reason
+Implementing surcharge marginal relief adds significant complexity (calculating tax at exactly 50L/1Cr/etc. and comparing differentials). For V1, the unified percentage application suffices for estimates. This will be added in V2.
 ### Impact
-We can run thousands of calculations in tests quickly without starting a server.
+Calculations precisely at 50,00,001 will show a sharp spike in tax compared to a calculator with marginal relief.
 
-## 6. Regime Handling
+## 8. Monetary/Rounding Strategy
 ### Decision
-The engine calculates both Old and New regimes simultaneously and returns a side-by-side breakdown with a final recommendation based strictly on the lower tax liability.
-### Alternatives
-Requiring the user to specify a regime up-front and only calculating that one.
+Monetary values are strictly parsed as Python `Decimal`. Final tax liability is rounded to the nearest multiple of 10 using `ROUND_HALF_UP` (Section 288B of the Income Tax Act).
 ### Reason
-A core value-add for the user is seeing the comparison automatically to make financial decisions.
-
-## 7. Monetary/Rounding Strategy
-### Decision
-Monetary values are strictly parsed as Python `Decimal`. Final tax liability is rounded to the nearest multiple of 10 using `ROUND_HALF_UP`.
-### Alternatives
-Using standard `float`.
-### Reason
-Floating-point inaccuracies (e.g., 0.1 + 0.2) are unacceptable in financial applications. Rounding to the nearest 10 is legally mandated by Section 288B of the Income Tax Act.
-### Impact
-Calculations are exact and identical across runs.
-
-## 8. Validation Strategy
-### Decision
-Pydantic is used at the domain boundary to enforce non-negative monetary values and valid financial years.
-### Alternatives
-Manual `if val < 0: raise Exception` blocks.
-### Reason
-Pydantic centralizes and standardizes error throwing.
+Floating-point inaccuracies are unacceptable. Rounding to the nearest 10 is legally mandated.
 
 ## 9. Testing Methodology
 ### Decision
-Comprehensive boundary testing and full-scenario integration testing (e.g., high-income surcharge trigger, zero-income limits) using `pytest`.
+Comprehensive boundary testing, unit testing of the calculation engine, and domain validations using `pytest`.
 ### Reason
-As mandated by the specification, the accuracy must be verified.
-### Impact
-Ensures that the engine is a reliable foundation for the API.
+As mandated by the specification, the accuracy must be verified. 
+*Note: This strictly covers calculation unit tests. API, Database, and Frontend E2E testing will be implemented in their respective future batches.*

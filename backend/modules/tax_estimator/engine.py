@@ -64,11 +64,16 @@ def calculate_regime(inputs: TaxEstimatorInput, rules, is_new_regime: bool) -> R
     # Tax Calculation
     tax_on_income = calculate_tax_from_slabs(taxable_income, slabs)
     
-    # Rebate 87A (Simplified V1: full rebate if <= limit, no marginal relief implemented)
+    # Rebate 87A
     rebate = Decimal('0')
     if taxable_income <= rebate_limit:
         rebate = min(tax_on_income, rebate_max)
-        
+    elif is_new_regime and taxable_income > rules.NEW_REGIME_REBATE_87A_LIMIT:
+        # Marginal relief for 87A (New Regime only)
+        excess_income = taxable_income - rules.NEW_REGIME_REBATE_87A_LIMIT
+        if tax_on_income > excess_income:
+            rebate = tax_on_income - excess_income
+            
     tax_after_rebate = max(Decimal('0'), tax_on_income - rebate)
     
     # Surcharge

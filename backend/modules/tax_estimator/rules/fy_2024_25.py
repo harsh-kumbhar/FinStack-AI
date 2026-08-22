@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 # Authoritative Source: Income Tax Department, Government of India
-# URL: https://incometaxindia.gov.in/pages/charts-and-tables.aspx
+# URL: https://incometaxindia.gov.in/Tutorials/1.%20Tax%20rates.pdf
 # Financial Year: 2024-25 (Assessment Year 2025-26)
 
 # Standard Deduction applicable to Salary Income under both regimes
