@@ -65,7 +65,7 @@ const styles = {
         marginLeft: '240px',
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative' // Added for proper stacking context
+        position: 'relative'
     },
     topbar: {
         position: 'fixed',
@@ -105,7 +105,7 @@ const styles = {
         maxWidth: '1400px',
         margin: '64px auto 0 auto',
         width: '100%',
-        paddingBottom: '100px' // Added padding so FAB doesn't cover content
+        paddingBottom: '100px'
     },
     grid2: {
         display: 'grid',
@@ -430,39 +430,6 @@ const styles = {
         color: 'var(--text)',
         marginBottom: '16px'
     },
-    progressBarContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '20px'
-    },
-    progressBarItem: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px'
-    },
-    progressBarLabelRow: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        fontSize: '14px',
-        fontWeight: '600',
-        color: 'var(--text)'
-    },
-    progressBarTrack: {
-        height: '10px',
-        backgroundColor: 'var(--bg2)',
-        borderRadius: '5px',
-        overflow: 'hidden'
-    },
-    progressBarFill: {
-        height: '100%',
-        borderRadius: '5px',
-        transition: 'width 1.5s cubic-bezier(0.4, 0, 0.2, 1)'
-    },
-    actionRow: {
-        display: 'flex',
-        gap: '16px',
-        marginTop: '32px'
-    },
     btnPrimary: {
         padding: '14px 28px',
         backgroundColor: 'var(--saffron)',
@@ -496,19 +463,19 @@ const styles = {
         position: 'fixed',
         bottom: '32px',
         right: '32px',
-        width: '64px',
         height: '64px',
-        borderRadius: '50%',
+        borderRadius: '32px',
         backgroundColor: 'var(--navy)',
         color: 'var(--white)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '28px',
-        boxShadow: 'var(--shadow)',
+        padding: '0 24px',
+        gap: '10px',
+        boxShadow: '0 4px 16px rgba(0, 35, 80, 0.25)',
         cursor: 'pointer',
         zIndex: 1000,
-        border: 'none',
+        border: '2px solid rgba(255, 255, 255, 0.1)',
         transition: 'transform 0.2s ease'
     },
     chatPopup: {
@@ -632,13 +599,13 @@ export default function FinancialHealthResult() {
     // 1. STATE & HOOKS
     const [summaryExpanded, setSummaryExpanded] = useState(true);
     const [animatedScore, setAnimatedScore] = useState(0);
-    const [animateBars, setAnimateBars] = useState(false);
 
     // Chatbot States
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [chatMessage, setChatMessage] = useState('');
     const [chatMessages, setChatMessages] = useState([]);
     const [chatLoading, setChatLoading] = useState(false);
+
     const [isDownloading, setIsDownloading] = useState(false);
     const [downloadError, setDownloadError] = useState('');
 
@@ -648,7 +615,6 @@ export default function FinancialHealthResult() {
         if (prediction?.ml_health_score) {
             const timer = setTimeout(() => {
                 setAnimatedScore(Number(prediction.ml_health_score));
-                setAnimateBars(true);
             }, 100);
             return () => clearTimeout(timer);
         }
@@ -658,7 +624,6 @@ export default function FinancialHealthResult() {
     const handleDashboard = () => navigate('/dashboard');
 
     // 2. CHATBOT LOGIC
-    // Regex function to remove Markdown artifacts (###, **, etc)
     const formatAIResponse = (text) => {
         if (!text) return "";
         return text.replace(/[*#]/g, '').trim();
@@ -666,7 +631,6 @@ export default function FinancialHealthResult() {
 
     const sendChatMessage = async (textToSubmit) => {
         const question = textToSubmit.trim();
-
         if (!question || chatLoading) return;
 
         setChatMessages((prev) => [...prev, { role: 'user', content: question }]);
@@ -675,12 +639,7 @@ export default function FinancialHealthResult() {
 
         try {
             const data = await financialHealthService.chat(question, prediction);
-
-            setChatMessages((prev) => [
-                ...prev,
-                { role: 'assistant', content: data.answer }
-            ]);
-
+            setChatMessages((prev) => [...prev, { role: 'assistant', content: data.answer }]);
         } catch (error) {
             console.error('Chat error:', error);
             setChatMessages((prev) => [
@@ -702,21 +661,13 @@ export default function FinancialHealthResult() {
         setDownloadError('');
         try {
             const blob = await financialHealthService.downloadFinancialHealthReport(prediction);
-
-            // Create a temporary object URL for the blob
             const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
             const link = document.createElement('a');
             link.href = url;
-
-            // Set the dynamic filename
             const filename = `FinStack_Financial_Report_${prediction.report_id || 'Latest'}.pdf`;
             link.setAttribute('download', filename);
-
-            // Trigger download
             document.body.appendChild(link);
             link.click();
-
-            // Cleanup
             link.parentNode.removeChild(link);
             window.URL.revokeObjectURL(url);
         } catch (error) {
@@ -743,7 +694,6 @@ export default function FinancialHealthResult() {
         model_version,
         persona,
         metrics,
-        score_breakdown,
         strengths,
         weaknesses,
         risks,
@@ -775,17 +725,8 @@ export default function FinancialHealthResult() {
     const radius = 76;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (animatedScore / 100) * circumference;
-
-    const getBarColor = (percent) => {
-        if (percent >= 80) return 'var(--success)';
-        if (percent >= 60) return 'var(--info)';
-        if (percent >= 40) return 'var(--warning)';
-        return 'var(--error)';
-    };
-
     const metricsList = metrics ? Object.values(metrics) : [];
 
-    // 3. UI RENDER
     return (
         <div style={styles.layout}>
             {/* SIDEBAR */}
@@ -898,30 +839,8 @@ export default function FinancialHealthResult() {
                         )}
                     </div>
 
-                    {/* BREAKDOWN & AI SUMMARY */}
+                    {/* AI SUMMARY (Expanding to full width due to grid auto-fit) */}
                     <div style={styles.grid2}>
-                        {score_breakdown && (
-                            <div style={styles.card}>
-                                <h3 style={styles.sectionTitle}>🎯 Score Breakdown</h3>
-                                <div style={styles.progressBarContainer}>
-                                    {Object.entries(score_breakdown).map(([category, value]) => {
-                                        const percentage = Math.min(100, Math.round((value / 20) * 100));
-                                        return (
-                                            <div key={category} style={styles.progressBarItem}>
-                                                <div style={styles.progressBarLabelRow}>
-                                                    <span>{category}</span>
-                                                    <span>{value} / 20</span>
-                                                </div>
-                                                <div style={styles.progressBarTrack}>
-                                                    <div style={{ ...styles.progressBarFill, width: animateBars ? `${percentage}%` : '0%', backgroundColor: getBarColor(percentage) }} />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
-
                         {ai_summary && (
                             <div style={styles.card}>
                                 <h3 style={styles.sectionTitle}>💬 Executive Summary</h3>
@@ -965,6 +884,11 @@ export default function FinancialHealthResult() {
                                         badgeBg = 'var(--warning-light)';
                                     }
 
+                                    // Frontend text override for Investment Ratio
+                                    const displayDescription = metric.name === "Investment Ratio"
+                                        ? "Total investments relative to annual income."
+                                        : metric.description;
+
                                     return (
                                         <div key={idx} style={styles.metricCard}>
                                             <div style={styles.metricHeader}>
@@ -977,7 +901,7 @@ export default function FinancialHealthResult() {
                                                 <span style={styles.metricCurrent}>{metric.value} {metric.unit}</span>
                                                 <span style={styles.metricRecommended}>Target: {metric.recommended} {metric.unit}</span>
                                             </div>
-                                            <div style={styles.metricDescription}>{metric.description}</div>
+                                            <div style={styles.metricDescription}>{displayDescription}</div>
                                         </div>
                                     );
                                 })}
@@ -1084,18 +1008,11 @@ export default function FinancialHealthResult() {
                 <button
                     style={{
                         ...styles.chatFab,
-                        width: 'auto',              // Overrides the 64px width
-                        padding: '0 24px',          // Adds horizontal padding for the pill shape
-                        borderRadius: '32px',       // Perfect pill rounding
-                        gap: '10px',                // Space between icon and text
                         transform: isChatOpen ? 'scale(0)' : 'scale(1)',
-                        pointerEvents: isChatOpen ? 'none' : 'auto',
-                        boxShadow: '0 4px 16px rgba(0, 35, 80, 0.25)', // Stronger shadow for depth
-                        border: '2px solid rgba(255, 255, 255, 0.1)'
+                        pointerEvents: isChatOpen ? 'none' : 'auto'
                     }}
                     onClick={() => setIsChatOpen(true)}
                 >
-                    {/* Clean AI Robot SVG Icon */}
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h2a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-4a4 4 0 0 1 4-4h2V5.73A2 2 0 1 1 12 2zm3.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm3.5 4.5c1.38 0 2.5-.84 2.5-1.5H8.5c0 .66 1.12 1.5 2.5 1.5z" />
                     </svg>
