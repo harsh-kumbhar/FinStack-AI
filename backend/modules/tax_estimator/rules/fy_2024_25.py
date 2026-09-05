@@ -24,6 +24,7 @@ DEDUCTION_LIMITS_OLD_REGIME = {
     '80C': Decimal('150000'),
     '80D': Decimal('25000'),  # assuming individual non-senior
     '80TTA': Decimal('10000'),
+    '24B': Decimal('200000'),  # Section 24(b) Home loan interest (self-occupied)
 }
 
 # NEW REGIME (Default Regime u/s 115BAC)

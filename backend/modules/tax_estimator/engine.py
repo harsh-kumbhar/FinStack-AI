@@ -49,7 +49,11 @@ def calculate_regime(inputs: TaxEstimatorInput, rules, is_new_regime: bool) -> R
         deduction_80tta = min(inputs.deduction_80tta, rules.DEDUCTION_LIMITS_OLD_REGIME['80TTA'])
         deduction_80tta = min(deduction_80tta, inputs.other_income)
         
-        total_deductions = deduction_80c + deduction_80d + deduction_80tta
+        # Section 24(b) Home loan interest on self-occupied property (capped at ₹2,00,000 in Old Regime)
+        limit_24b = rules.DEDUCTION_LIMITS_OLD_REGIME.get('24B', Decimal('200000'))
+        deduction_24b = min(getattr(inputs, 'home_loan_interest', Decimal('0')), limit_24b)
+        
+        total_deductions = deduction_80c + deduction_80d + deduction_80tta + deduction_24b
     
     # Taxable Income
     taxable_income = gross_income - standard_deduction - total_deductions

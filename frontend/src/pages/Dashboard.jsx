@@ -214,7 +214,7 @@ const SIDEBAR_ITEMS = [
     { label: 'SmartFeed', path: '/smartfeed' },
     { label: 'Document Intelligence', soon: true },
     { label: 'Loan Risk Assessment', soon: true },
-    { label: 'Tax Estimator', soon: true },
+    { label: 'Tax Estimator', path: '/tax-estimator' },
     { label: 'Investment Advisor', soon: true },
     { label: 'Settings', soon: true }
 ];
@@ -414,10 +414,17 @@ export default function Dashboard() {
                                     </div>
                                 </div>
 
+                                <div style={styles.moduleCard}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>Tax Estimator</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+                                        <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
+                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/tax-estimator')}>Open</button>
+                                    </div>
+                                </div>
+
                                 {[
                                     'Document Intelligence',
                                     'Loan Risk Assessment',
-                                    'Tax Estimator',
                                     'Investment Advisor'
                                 ].map((mod, i) => (
                                     <div key={i} style={{ ...styles.moduleCard, ...styles.moduleSoon }} onClick={() => handleFeatureClick('soon')}>

@@ -6,6 +6,7 @@ import ProfileCompletion from "./pages/ProfileCompletion";
 import FinancialHealthAnalyzer from "./pages/FinancialHealthAnalyzer";
 import FinancialHealthResult from "./pages/FinancialHealthResult";
 import SmartFeed from "./pages/SmartFeed";
+import TaxEstimator from "./pages/TaxEstimator";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -56,6 +57,15 @@ function App() {
                 element={
                     <ProtectedRoute requireProfile={false}>
                         <SmartFeed />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/tax-estimator"
+                element={
+                    <ProtectedRoute requireProfile={false}>
+                        <TaxEstimator />
                     </ProtectedRoute>
                 }
             />

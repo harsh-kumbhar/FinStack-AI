@@ -12,8 +12,9 @@ class TaxEstimatorInput(BaseModel):
     deduction_80c: Decimal = Field(default=Decimal('0.0'), ge=Decimal('0.0'), description="Section 80C deductions")
     deduction_80d: Decimal = Field(default=Decimal('0.0'), ge=Decimal('0.0'), description="Section 80D deductions")
     deduction_80tta: Decimal = Field(default=Decimal('0.0'), ge=Decimal('0.0'), description="Section 80TTA deductions")
+    home_loan_interest: Decimal = Field(default=Decimal('0.0'), ge=Decimal('0.0'), description="Section 24(b) Home loan interest")
     
-    @field_validator('gross_salary', 'other_income', 'deduction_80c', 'deduction_80d', 'deduction_80tta', mode='before')
+    @field_validator('gross_salary', 'other_income', 'deduction_80c', 'deduction_80d', 'deduction_80tta', 'home_loan_interest', mode='before')
     @classmethod
     def validate_monetary_values(cls, v):
         if v is None:
