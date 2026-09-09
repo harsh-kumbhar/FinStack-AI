@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { financialHealthService } from '../services/financialHealthService';
 
 const styles = {
     layout: {
@@ -63,7 +64,8 @@ const styles = {
         flex: 1,
         marginLeft: '240px',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        position: 'relative' // Added for proper stacking context
     },
     topbar: {
         position: 'fixed',
@@ -102,7 +104,8 @@ const styles = {
         gap: '32px',
         maxWidth: '1400px',
         margin: '64px auto 0 auto',
-        width: '100%'
+        width: '100%',
+        paddingBottom: '100px' // Added padding so FAB doesn't cover content
     },
     grid2: {
         display: 'grid',
@@ -486,6 +489,127 @@ const styles = {
         flex: 1,
         textAlign: 'center',
         transition: 'background-color 0.2s ease'
+    },
+
+    /* ---- NEW CHATBOT STYLES ---- */
+    chatFab: {
+        position: 'fixed',
+        bottom: '32px',
+        right: '32px',
+        width: '64px',
+        height: '64px',
+        borderRadius: '50%',
+        backgroundColor: 'var(--navy)',
+        color: 'var(--white)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '28px',
+        boxShadow: 'var(--shadow)',
+        cursor: 'pointer',
+        zIndex: 1000,
+        border: 'none',
+        transition: 'transform 0.2s ease'
+    },
+    chatPopup: {
+        position: 'fixed',
+        bottom: '110px',
+        right: '32px',
+        width: '380px',
+        height: '550px',
+        backgroundColor: 'var(--white)',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-lg)',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 1000,
+        overflow: 'hidden',
+        border: '1px solid var(--border)'
+    },
+    chatPopupHeader: {
+        backgroundColor: 'var(--navy)',
+        color: 'var(--white)',
+        padding: '16px 20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        fontWeight: 'bold',
+        fontSize: '15px'
+    },
+    chatMessagesBody: {
+        padding: '16px',
+        flex: 1,
+        overflowY: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '12px',
+        backgroundColor: '#f8fafc'
+    },
+    userMessage: {
+        alignSelf: 'flex-end',
+        maxWidth: '80%',
+        backgroundColor: 'var(--navy)',
+        color: 'var(--white)',
+        padding: '12px 16px',
+        borderRadius: '16px 16px 4px 16px',
+        fontSize: '14px',
+        lineHeight: '1.5',
+        boxShadow: 'var(--shadow-sm)'
+    },
+    aiMessage: {
+        alignSelf: 'flex-start',
+        maxWidth: '85%',
+        backgroundColor: 'var(--white)',
+        color: 'var(--text)',
+        padding: '14px 16px',
+        borderRadius: '16px 16px 16px 4px',
+        border: '1px solid var(--border)',
+        fontSize: '14px',
+        lineHeight: '1.6',
+        whiteSpace: 'pre-wrap',
+        boxShadow: 'var(--shadow-sm)'
+    },
+    suggestedPill: {
+        backgroundColor: 'var(--white)',
+        color: 'var(--navy)',
+        padding: '10px 14px',
+        borderRadius: '20px',
+        fontSize: '13px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        border: '1px solid var(--border)',
+        textAlign: 'left',
+        transition: 'all 0.2s ease',
+        boxShadow: 'var(--shadow-sm)',
+        lineHeight: '1.4'
+    },
+    chatInputContainer: {
+        padding: '16px',
+        borderTop: '1px solid var(--border)',
+        backgroundColor: 'var(--white)',
+        display: 'flex',
+        gap: '8px'
+    },
+    chatInput: {
+        flex: 1,
+        padding: '12px 16px',
+        border: '1px solid var(--border)',
+        borderRadius: '30px',
+        outline: 'none',
+        fontSize: '14px',
+        fontFamily: "'Noto Sans', 'Segoe UI', sans-serif",
+        backgroundColor: '#f8fafc',
+        color: 'var(--text)'
+    },
+    chatSendButton: {
+        padding: '0 16px',
+        backgroundColor: 'var(--saffron)',
+        color: 'var(--white)',
+        border: 'none',
+        borderRadius: '30px',
+        fontWeight: '700',
+        cursor: 'pointer',
+        transition: 'opacity 0.2s'
     }
 };
 
@@ -505,9 +629,18 @@ export default function FinancialHealthResult() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    // 1. STATE & HOOKS
     const [summaryExpanded, setSummaryExpanded] = useState(true);
     const [animatedScore, setAnimatedScore] = useState(0);
     const [animateBars, setAnimateBars] = useState(false);
+
+    // Chatbot States
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    const [chatMessage, setChatMessage] = useState('');
+    const [chatMessages, setChatMessages] = useState([]);
+    const [chatLoading, setChatLoading] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [downloadError, setDownloadError] = useState('');
 
     const { prediction, inputs } = location.state || {};
 
@@ -524,6 +657,77 @@ export default function FinancialHealthResult() {
     const handleBack = () => navigate('/health-analyzer');
     const handleDashboard = () => navigate('/dashboard');
 
+    // 2. CHATBOT LOGIC
+    // Regex function to remove Markdown artifacts (###, **, etc)
+    const formatAIResponse = (text) => {
+        if (!text) return "";
+        return text.replace(/[*#]/g, '').trim();
+    };
+
+    const sendChatMessage = async (textToSubmit) => {
+        const question = textToSubmit.trim();
+
+        if (!question || chatLoading) return;
+
+        setChatMessages((prev) => [...prev, { role: 'user', content: question }]);
+        setChatMessage('');
+        setChatLoading(true);
+
+        try {
+            const data = await financialHealthService.chat(question, prediction);
+
+            setChatMessages((prev) => [
+                ...prev,
+                { role: 'assistant', content: data.answer }
+            ]);
+
+        } catch (error) {
+            console.error('Chat error:', error);
+            setChatMessages((prev) => [
+                ...prev,
+                { role: 'assistant', content: 'I am currently unable to connect to the FinStack AI assistant. Please try again in a moment.' }
+            ]);
+        } finally {
+            setChatLoading(false);
+        }
+    };
+
+    const handleChatSubmit = (e) => {
+        e?.preventDefault();
+        sendChatMessage(chatMessage);
+    };
+
+    const handleDownloadReport = async () => {
+        setIsDownloading(true);
+        setDownloadError('');
+        try {
+            const blob = await financialHealthService.downloadFinancialHealthReport(prediction);
+
+            // Create a temporary object URL for the blob
+            const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+
+            // Set the dynamic filename
+            const filename = `FinStack_Financial_Report_${prediction.report_id || 'Latest'}.pdf`;
+            link.setAttribute('download', filename);
+
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+
+            // Cleanup
+            link.parentNode.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download error:', error);
+            setDownloadError('Unable to generate financial report. Please try again.');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    // Early return if no data
     if (!prediction) {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg)', gap: '24px' }}>
@@ -549,7 +753,6 @@ export default function FinancialHealthResult() {
 
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-    // Determine semantic color style properties for score
     let scoreColor = 'var(--text3)';
     let scoreBg = 'var(--bg2)';
     let statusText = health_status || 'Fair';
@@ -569,12 +772,10 @@ export default function FinancialHealthResult() {
         scoreBg = 'var(--error-light)';
     }
 
-    // Circular Progress Math
     const radius = 76;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (animatedScore / 100) * circumference;
 
-    // Helper for Semantic Breakdown Bars
     const getBarColor = (percent) => {
         if (percent >= 80) return 'var(--success)';
         if (percent >= 60) return 'var(--info)';
@@ -582,9 +783,9 @@ export default function FinancialHealthResult() {
         return 'var(--error)';
     };
 
-    // Safely parse metrics object
     const metricsList = metrics ? Object.values(metrics) : [];
 
+    // 3. UI RENDER
     return (
         <div style={styles.layout}>
             {/* SIDEBAR */}
@@ -611,7 +812,6 @@ export default function FinancialHealthResult() {
 
             {/* MAIN AREA */}
             <main style={styles.main}>
-                {/* TOP NAVBAR */}
                 <header style={styles.topbar}>
                     <div style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '18px' }}>
                         Analysis Report
@@ -622,59 +822,32 @@ export default function FinancialHealthResult() {
                     </div>
                 </header>
 
-                {/* CONTENT */}
                 <div style={styles.content}>
-
-                    {/* PERSONA CARD & SCORE ROW */}
+                    {/* PERSONA & SCORE */}
                     <div style={styles.grid2}>
-                        {/* SCORE CARD */}
                         <div style={{ ...styles.card, ...styles.scoreCard }}>
-                            <h3 style={styles.sectionTitle}>
-                                Financial Health Score
-                            </h3>
-
+                            <h3 style={styles.sectionTitle}>Financial Health Score</h3>
                             <div style={styles.scoreRingContainer}>
                                 <svg width="180" height="180" style={{ transform: 'rotate(-90deg)' }}>
                                     <circle cx="90" cy="90" r={radius} stroke="var(--bg2)" strokeWidth="12" fill="none" />
-                                    <circle
-                                        cx="90"
-                                        cy="90"
-                                        r={radius}
-                                        stroke={scoreColor}
-                                        strokeWidth="12"
-                                        fill="none"
-                                        strokeDasharray={circumference}
-                                        strokeDashoffset={strokeDashoffset}
-                                        style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)', strokeLinecap: 'round' }}
-                                    />
+                                    <circle cx="90" cy="90" r={radius} stroke={scoreColor} strokeWidth="12" fill="none" strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} style={{ transition: 'stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1)', strokeLinecap: 'round' }} />
                                 </svg>
                                 <div style={styles.scoreInner}>
-                                    <span style={{ ...styles.scoreNumber, color: scoreColor }}>
-                                        {Number(ml_health_score).toFixed(1)}
-                                    </span>
+                                    <span style={{ ...styles.scoreNumber, color: scoreColor }}>{Number(ml_health_score).toFixed(1)}</span>
                                     <span style={styles.scoreMax}>/ 100</span>
                                 </div>
                             </div>
-
-                            <div style={{ ...styles.statusBadge, backgroundColor: scoreBg, color: scoreColor }}>
-                                {statusText}
-                            </div>
-
-                            <span style={styles.engineVersion}>
-                                Engine Version: {model_version}
-                            </span>
+                            <div style={{ ...styles.statusBadge, backgroundColor: scoreBg, color: scoreColor }}>{statusText}</div>
+                            <span style={styles.engineVersion}>Engine Version: {model_version}</span>
                         </div>
 
-                        {/* PERSONA CARD */}
                         {persona && (
                             <div style={{ ...styles.card, ...styles.personaCard }}>
                                 <div style={styles.personaHeader}>
                                     <div style={styles.personaEmoji}>{persona.emoji || '👤'}</div>
                                     <div style={styles.personaTitle}>{persona.title}</div>
                                 </div>
-                                <p style={styles.personaDesc}>
-                                    {persona.description}
-                                </p>
+                                <p style={styles.personaDesc}>{persona.description}</p>
                                 <div style={styles.personaDetailsGrid}>
                                     <div style={styles.personaDetailRow}>
                                         <span style={{ color: 'var(--text2)' }}>Primary Strength</span>
@@ -689,37 +862,50 @@ export default function FinancialHealthResult() {
                                         <strong style={{ color: 'var(--warning)' }}>{persona.risk_level}</strong>
                                     </div>
                                 </div>
-                                <div style={styles.actionRow}>
-                                    <button
-                                        style={styles.btnOutline}
-                                        onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--bg2)'}
-                                        onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--white)'}
-                                        onClick={handleBack}
-                                    >
-                                        Recalculate
-                                    </button>
-                                    <button
-                                        style={styles.btnPrimary}
-                                        onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
-                                        onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
-                                        onClick={handleDashboard}
-                                    >
-                                        Dashboard
-                                    </button>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '32px', width: '100%' }}>
+                                    {downloadError && (
+                                        <div style={{ color: 'var(--error)', fontSize: '13px', textAlign: 'center', fontWeight: 'bold' }}>
+                                            {downloadError}
+                                        </div>
+                                    )}
+                                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                                        <button style={styles.btnOutline} onClick={handleBack}>Recalculate</button>
+
+                                        <button
+                                            style={{ ...styles.btnOutline, backgroundColor: '#f8fafc' }}
+                                            onClick={() => navigate('/financial-journey')}
+                                        >
+                                            📈 View Financial Journey
+                                        </button>
+
+                                        <button
+                                            style={{
+                                                ...styles.btnOutline,
+                                                backgroundColor: isDownloading ? 'var(--bg2)' : 'var(--white)',
+                                                opacity: isDownloading ? 0.7 : 1
+                                            }}
+                                            onClick={handleDownloadReport}
+                                            disabled={isDownloading}
+                                        >
+                                            {isDownloading ? 'Generating Report...' : '📥 Download PDF'}
+                                        </button>
+
+                                        <button style={styles.btnPrimary} onClick={handleDashboard}>Dashboard</button>
+                                    </div>
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* SCORE BREAKDOWN & EXPANDABLE AI SUMMARY */}
+                    {/* BREAKDOWN & AI SUMMARY */}
                     <div style={styles.grid2}>
-                        {/* SCORE BREAKDOWN */}
                         {score_breakdown && (
                             <div style={styles.card}>
                                 <h3 style={styles.sectionTitle}>🎯 Score Breakdown</h3>
                                 <div style={styles.progressBarContainer}>
                                     {Object.entries(score_breakdown).map(([category, value]) => {
-                                        const percentage = Math.min(100, Math.round((value / 20) * 100)); // Assuming max 20 per category
+                                        const percentage = Math.min(100, Math.round((value / 20) * 100));
                                         return (
                                             <div key={category} style={styles.progressBarItem}>
                                                 <div style={styles.progressBarLabelRow}>
@@ -727,13 +913,7 @@ export default function FinancialHealthResult() {
                                                     <span>{value} / 20</span>
                                                 </div>
                                                 <div style={styles.progressBarTrack}>
-                                                    <div
-                                                        style={{
-                                                            ...styles.progressBarFill,
-                                                            width: animateBars ? `${percentage}%` : '0%',
-                                                            backgroundColor: getBarColor(percentage)
-                                                        }}
-                                                    />
+                                                    <div style={{ ...styles.progressBarFill, width: animateBars ? `${percentage}%` : '0%', backgroundColor: getBarColor(percentage) }} />
                                                 </div>
                                             </div>
                                         );
@@ -742,29 +922,18 @@ export default function FinancialHealthResult() {
                             </div>
                         )}
 
-                        {/* EXPANDABLE AI SUMMARY CARD */}
                         {ai_summary && (
                             <div style={styles.card}>
                                 <h3 style={styles.sectionTitle}>💬 Executive Summary</h3>
-                                <details
-                                    style={styles.summaryDetails}
-                                    open={summaryExpanded}
-                                    onToggle={(e) => setSummaryExpanded(e.target.open)}
-                                >
+                                <details style={styles.summaryDetails} open={summaryExpanded} onToggle={(e) => setSummaryExpanded(e.target.open)}>
                                     <summary style={styles.summarySummary}>
                                         <span>{summaryExpanded ? "Hide AI Report" : "Read AI Financial Report"}</span>
-                                        <span style={{ color: 'var(--saffron)', fontSize: '20px' }}>
-                                            {summaryExpanded ? '−' : '+'}
-                                        </span>
+                                        <span style={{ color: 'var(--saffron)', fontSize: '20px' }}>{summaryExpanded ? '−' : '+'}</span>
                                     </summary>
                                     <div style={styles.summaryTextContainer}>
                                         {ai_summary.split('\n').map((paragraph, i) => {
-                                            // Remove all asterisk characters (*) used for markdown bolding/italics
-                                            const cleanParagraph = paragraph.replace(/\*/g, '').trim();
-
-                                            return cleanParagraph ? (
-                                                <p key={i} style={styles.summaryParagraph}>{cleanParagraph}</p>
-                                            ) : null;
+                                            const cleanParagraph = paragraph.replace(/[*#]/g, '').trim();
+                                            return cleanParagraph ? <p key={i} style={styles.summaryParagraph}>{cleanParagraph}</p> : null;
                                         })}
                                     </div>
                                 </details>
@@ -772,7 +941,7 @@ export default function FinancialHealthResult() {
                         )}
                     </div>
 
-                    {/* SELF-DESCRIBING METRIC CARDS */}
+                    {/* METRICS */}
                     {metricsList.length > 0 && (
                         <div>
                             <h3 style={styles.sectionTitle}>📊 Detailed Metrics</h3>
@@ -797,24 +966,10 @@ export default function FinancialHealthResult() {
                                     }
 
                                     return (
-                                        <div
-                                            key={idx}
-                                            style={styles.metricCard}
-                                            onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                                            onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                                        >
+                                        <div key={idx} style={styles.metricCard}>
                                             <div style={styles.metricHeader}>
                                                 <span style={styles.metricName}>{metric.name}</span>
-                                                <span style={{
-                                                    fontSize: '11px',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '20px',
-                                                    color: badgeColor,
-                                                    backgroundColor: badgeBg,
-                                                    fontWeight: '700',
-                                                    letterSpacing: '0.5px',
-                                                    textTransform: 'uppercase'
-                                                }}>
+                                                <span style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '20px', color: badgeColor, backgroundColor: badgeBg, fontWeight: '700', textTransform: 'uppercase' }}>
                                                     {metric.status}
                                                 </span>
                                             </div>
@@ -832,7 +987,6 @@ export default function FinancialHealthResult() {
 
                     {/* STRENGTHS & WEAKNESSES */}
                     <div style={styles.grid2}>
-                        {/* STRENGTHS */}
                         <div style={styles.card}>
                             <h3 style={styles.sectionTitle}>✔️ Key Strengths</h3>
                             <ul style={styles.bulletList}>
@@ -844,20 +998,16 @@ export default function FinancialHealthResult() {
                                         </li>
                                     ))
                                 ) : (
-                                    <div style={styles.emptyState}>No specific strengths identified in current profile.</div>
+                                    <div style={styles.emptyState}>No specific strengths identified.</div>
                                 )}
                             </ul>
                         </div>
-
-                        {/* WEAKNESSES */}
                         <div style={styles.card}>
                             <h3 style={styles.sectionTitle}>⚠️ Areas for Improvement</h3>
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 {weaknesses && weaknesses.length > 0 ? (
                                     weaknesses.map((weak, idx) => (
-                                        <div key={idx} style={styles.warningCard}>
-                                            {weak}
-                                        </div>
+                                        <div key={idx} style={styles.warningCard}>{weak}</div>
                                     ))
                                 ) : (
                                     <div style={styles.emptyState}>No major weaknesses identified. Great job!</div>
@@ -866,21 +1016,19 @@ export default function FinancialHealthResult() {
                         </div>
                     </div>
 
-                    {/* RISKS (HIDE IF EMPTY) */}
+                    {/* RISKS */}
                     {risks && risks.length > 0 && (
                         <div style={{ ...styles.card, border: '1px solid var(--error-light)' }}>
                             <h3 style={{ ...styles.sectionTitle, color: 'var(--error)' }}>🚨 Critical Risks Identified</h3>
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 {risks.map((risk, idx) => (
-                                    <div key={idx} style={styles.riskCard}>
-                                        {risk}
-                                    </div>
+                                    <div key={idx} style={styles.riskCard}>{risk}</div>
                                 ))}
                             </div>
                         </div>
                     )}
 
-                    {/* DETAILED RECOMMENDATIONS */}
+                    {/* RECOMMENDATIONS */}
                     {recommendations && recommendations.length > 0 && (
                         <div style={{ ...styles.card, padding: '40px' }}>
                             <h3 style={styles.sectionTitle}>💡 Personalized Action Plan</h3>
@@ -905,22 +1053,11 @@ export default function FinancialHealthResult() {
                                         <div key={idx} style={styles.recommendationCard}>
                                             <div style={styles.recHeader}>
                                                 <span style={styles.recTitle}>{rec.title}</span>
-                                                <span style={{
-                                                    fontSize: '11px',
-                                                    fontWeight: '700',
-                                                    color: pColor,
-                                                    backgroundColor: pBg,
-                                                    padding: '4px 10px',
-                                                    borderRadius: '20px',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px'
-                                                }}>
+                                                <span style={{ fontSize: '11px', fontWeight: '700', color: pColor, backgroundColor: pBg, padding: '4px 10px', borderRadius: '20px', textTransform: 'uppercase' }}>
                                                     {rec.priority} Priority
                                                 </span>
                                             </div>
-                                            <p style={styles.recReason}>
-                                                {rec.reason}
-                                            </p>
+                                            <p style={styles.recReason}>{rec.reason}</p>
                                             <div style={styles.recValuesGrid}>
                                                 <div style={styles.recValueBlock}>
                                                     <span style={styles.recValueLabel}>Current</span>
@@ -942,6 +1079,99 @@ export default function FinancialHealthResult() {
                         </div>
                     )}
                 </div>
+
+                {/* --- FLOATING CHAT WIDGET --- */}
+                <button
+                    style={{
+                        ...styles.chatFab,
+                        width: 'auto',              // Overrides the 64px width
+                        padding: '0 24px',          // Adds horizontal padding for the pill shape
+                        borderRadius: '32px',       // Perfect pill rounding
+                        gap: '10px',                // Space between icon and text
+                        transform: isChatOpen ? 'scale(0)' : 'scale(1)',
+                        pointerEvents: isChatOpen ? 'none' : 'auto',
+                        boxShadow: '0 4px 16px rgba(0, 35, 80, 0.25)', // Stronger shadow for depth
+                        border: '2px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                    onClick={() => setIsChatOpen(true)}
+                >
+                    {/* Clean AI Robot SVG Icon */}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h2a4 4 0 0 1 4 4v4a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4v-4a4 4 0 0 1 4-4h2V5.73A2 2 0 1 1 12 2zm3.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-7 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm3.5 4.5c1.38 0 2.5-.84 2.5-1.5H8.5c0 .66 1.12 1.5 2.5 1.5z" />
+                    </svg>
+                    <span style={{ fontSize: '15px', fontWeight: '700', letterSpacing: '0.5px' }}>
+                        Ask AI
+                    </span>
+                    <span style={{ color: 'var(--saffron)', fontSize: '18px' }}>✨</span>
+                </button>
+
+                {isChatOpen && (
+                    <div style={styles.chatPopup}>
+                        <div style={styles.chatPopupHeader}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                🤖 FinStack AI Advisor
+                            </span>
+                            <button
+                                onClick={() => setIsChatOpen(false)}
+                                style={{ background: 'none', border: 'none', color: 'var(--white)', cursor: 'pointer', fontSize: '18px' }}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div style={styles.chatMessagesBody}>
+                            {chatMessages.length === 0 ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div style={styles.aiMessage}>
+                                        Hi! I'm your FinStack AI Advisor. I have analyzed your financial health report. How can I help you today?
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        {[
+                                            "Why is my financial score low?",
+                                            "How can I build a better emergency fund?",
+                                            "What are my biggest financial risks right now?"
+                                        ].map((question, i) => (
+                                            <button
+                                                key={i}
+                                                style={styles.suggestedPill}
+                                                onClick={() => sendChatMessage(question)}
+                                                onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                                                onMouseLeave={(e) => e.target.style.backgroundColor = 'var(--white)'}
+                                            >
+                                                {question}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                chatMessages.map((message, index) => (
+                                    <div key={index} style={message.role === 'user' ? styles.userMessage : styles.aiMessage}>
+                                        {message.role === 'assistant' ? formatAIResponse(message.content) : message.content}
+                                    </div>
+                                ))
+                            )}
+                            {chatLoading && <div style={styles.aiMessage}>Thinking...</div>}
+                        </div>
+
+                        <form onSubmit={handleChatSubmit} style={styles.chatInputContainer}>
+                            <input
+                                type="text"
+                                value={chatMessage}
+                                onChange={(e) => setChatMessage(e.target.value)}
+                                placeholder="Ask a question..."
+                                style={styles.chatInput}
+                                disabled={chatLoading}
+                            />
+                            <button
+                                type="submit"
+                                style={{ ...styles.chatSendButton, opacity: chatLoading || !chatMessage.trim() ? 0.6 : 1 }}
+                                disabled={chatLoading || !chatMessage.trim()}
+                            >
+                                {chatLoading ? '...' : 'Ask'}
+                            </button>
+                        </form>
+                    </div>
+                )}
             </main>
         </div>
     );

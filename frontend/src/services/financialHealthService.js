@@ -15,6 +15,8 @@ export const financialHealthService = {
             data: { session },
         } = await supabase.auth.getSession();
 
+        console.log(session?.access_token);
+
         const response = await axios.post(
             `${API_URL}/financial-health/predict`,
             {
@@ -46,6 +48,92 @@ export const financialHealthService = {
     }
   },
 
+
+    /**
+     * Send a question to the FinStack AI RAG chatbot.
+     * Uses the current financial health report as context.
+     */
+    async chat(question, report) {
+        try {
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
+            if (!session?.access_token) {
+                throw new Error('User is not authenticated.');
+            }
+
+            const response = await axios.post(
+                `${API_URL}/financial-health/chat`,
+                {
+                    question: question,
+                    report: report,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                }
+            );
+
+            return response.data;
+        } catch (error) {
+            console.error('Error getting AI chatbot response:', error);
+
+            throw error;
+        }
+    },
+    /**
+         * Download the Financial Health Report as a PDF.
+         */
+    async downloadFinancialHealthReport(report) {
+        try {
+            const {
+                data: { session },
+            } = await supabase.auth.getSession();
+
+            if (!session?.access_token) {
+                throw new Error('User is not authenticated.');
+            }
+
+            const response = await axios.post(
+                `${API_URL}/financial-health/report/pdf`,
+                { report: report },
+                {
+                    headers: {
+                        Authorization: `Bearer ${session.access_token}`,
+                    },
+                    responseType: "blob", // Crucial for receiving the PDF file
+                }
+            );
+
+            return response.data;
+        } catch (error) {
+            console.error('Error downloading PDF report:', error);
+            throw error;
+        }
+    },
+
+    async getFinancialJourney() {
+        const {
+            data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session?.access_token) {
+            throw new Error("User is not authenticated");
+        }
+
+        const response = await axios.get(
+            `${API_URL}/financial-health/journey`,
+            {
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+            }
+        );
+
+        return response.data;
+    },   // <-- THIS COMMA
   /**
    * Generate a mock response matching the new backend schema based on the input data.
    */

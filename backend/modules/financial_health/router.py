@@ -1,14 +1,25 @@
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi.responses import Response
 from common.database import get_current_user
 from modules.financial_health.history_service import HistoryService
 from fastapi import HTTPException
+from modules.financial_health.rag.chatbot import FinancialChatbot
+from modules.financial_health.journey_service import JourneyService
+from modules.financial_health.pdf_service import (
+    FinancialHealthPDFService,
+    
+)
 
 from modules.financial_health.schema import (
     FinancialProfileData,
     PredictionResult,
     HistoryReport,
     HistoryReportList,
+    ChatRequest,
+    ChatResponse,
+    PDFReportRequest,
+    FinancialJourney,
 )
 
 from modules.financial_health.ml_predictor import (
@@ -128,3 +139,89 @@ def delete_report(
     return {
         "message": "Report deleted successfully"
     }
+
+@router.get(
+    "/journey",
+    response_model=FinancialJourney,
+)
+def get_financial_journey(
+    user=Depends(get_current_user),
+):
+    print("\n===== JOURNEY DEBUG =====")
+    print("Authenticated User ID:", user.id)
+
+    reports = HistoryService.get_user_reports(user.id)
+
+    print("Reports Found:", len(reports))
+    print(
+        "Scores:",
+        [r.get("final_health_score") for r in reports]
+    )
+    print("=========================\n")
+
+    return JourneyService.build_journey(reports)
+@router.post(
+    "/chat",
+    response_model=ChatResponse,
+)
+def financial_health_chat(
+    request: ChatRequest,
+    user=Depends(get_current_user),
+):
+
+    if not request.question.strip():
+        raise HTTPException(
+            status_code=400,
+            detail="Question cannot be empty.",
+        )
+
+    answer = FinancialChatbot.chat(
+        question=request.question,
+        report=request.report,
+    )
+
+    return ChatResponse(
+        answer=answer
+    )
+
+@router.post(
+    "/report/pdf",
+)
+def generate_financial_health_pdf(
+    request: PDFReportRequest,
+    user=Depends(get_current_user),
+):
+    user_name = (
+    getattr(user, "user_metadata", {})
+    .get("full_name")
+    or getattr(user, "user_metadata", {})
+    .get("name")
+    or getattr(user, "email", None)
+    or "FinStack User"
+)
+
+    # ----------------------------------------------
+    # Generate PDF
+    # ----------------------------------------------
+
+    pdf_bytes = FinancialHealthPDFService.generate_report(
+        report=request.report,
+        user_name=user_name,
+    )
+
+    # ----------------------------------------------
+    # Return PDF
+    # ----------------------------------------------
+
+    report_id = request.report.report_id
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": (
+                f'attachment; '
+                f'filename="FinStack_Financial_Report_{report_id}.pdf"'
+            )
+        },
+    )

@@ -414,6 +414,14 @@ export default function Dashboard() {
                                     </div>
                                 </div>
 
+                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>Financial Journey</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+                                        <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
+                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/financial-journey')}>Open</button>
+                                    </div>
+                                </div>
+
                                 {[
                                     'Document Intelligence',
                                     'Loan Risk Assessment',
@@ -427,6 +435,7 @@ export default function Dashboard() {
                                         </div>
                                     </div>
                                 ))}
+
                             </div>
                         </div>
 

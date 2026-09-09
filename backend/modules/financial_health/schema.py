@@ -193,3 +193,62 @@ class HistoryReport(BaseModel):
 class HistoryReportList(BaseModel):
 
     reports: List[HistoryReport]
+
+class ChatRequest(BaseModel):
+    question: str
+    report: dict
+
+
+class ChatResponse(BaseModel):
+    answer: str
+
+class PDFReportRequest(BaseModel):
+    report: PredictionResult
+
+class JourneyHistoryPoint(BaseModel):
+    date: str | None = None
+    score: float
+    savings_rate: float
+    expense_ratio: float
+    debt_to_income_ratio: float
+    emergency_fund_months: float
+    investment_ratio: float
+    insurance_ratio: float
+    net_monthly_cashflow: float
+
+
+class JourneySnapshot(BaseModel):
+    date: str | None = None
+    score: float
+    health_status: str
+
+
+class JourneyMetricComparison(BaseModel):
+    first: float
+    current: float
+    change: float
+
+
+class JourneyComparison(BaseModel):
+    score: JourneyMetricComparison
+    savings_rate: JourneyMetricComparison
+    debt_to_income_ratio: JourneyMetricComparison
+    emergency_fund_months: JourneyMetricComparison
+    investment_ratio: JourneyMetricComparison
+    expense_ratio: JourneyMetricComparison
+
+
+class FinancialJourney(BaseModel):
+    report_count: int
+
+    current: JourneySnapshot | None = None
+    previous: JourneySnapshot | None = None
+
+    score_change: float | None = None
+
+    history: list[JourneyHistoryPoint]
+
+    comparison: JourneyComparison | None = None
+
+    improvements: list[str]
+    areas_to_watch: list[str]
