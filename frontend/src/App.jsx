@@ -9,7 +9,7 @@ import SmartFeed from "./pages/SmartFeed";
 import NotFound from "./pages/NotFound";
 import FinancialJourney from './pages/FinancialJourney';
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import DocumentVault from "./pages/DocumentVault";
 function App() {
     return (
         <Routes>
@@ -65,6 +65,14 @@ function App() {
                     <FinancialJourney />
                 </ProtectedRoute>
             } />
+            <Route
+                path="/document-vault"
+                element={
+                    <ProtectedRoute>
+                        <DocumentVault />
+                    </ProtectedRoute>
+                }
+            />
 
             <Route path="*" element={<NotFound />} />
         </Routes>

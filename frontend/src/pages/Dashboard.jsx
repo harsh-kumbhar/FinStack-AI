@@ -395,30 +395,109 @@ export default function Dashboard() {
                     <div style={styles.grid2}>
                         {/* AI MODULES */}
                         <div>
-                            <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginBottom: '20px' }}>AI Modules</h3>
+                            <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginBottom: '20px' }}>
+                                AI Modules
+                            </h3>
+
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
 
                                 <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>Financial Health Analyzer</div>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>
+                                        Document Vault
+                                    </div>
+
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
-                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/health-analyzer')}>Open</button>
+                                        <span style={{
+                                            fontSize: '12px',
+                                            color: 'var(--success)',
+                                            backgroundColor: 'var(--success-light)',
+                                            padding: '4px 8px',
+                                            borderRadius: '4px'
+                                        }}>
+                                            Ready
+                                        </span>
+
+                                        <button
+                                            style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }}
+                                            onClick={() => navigate('/document-vault')}
+                                        >
+                                            Open
+                                        </button>
                                     </div>
                                 </div>
 
                                 <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>SmartFeed</div>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>
+                                        Financial Health Analyzer
+                                    </div>
+
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
-                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/smartfeed')}>Open</button>
+                                        <span style={{
+                                            fontSize: '12px',
+                                            color: 'var(--success)',
+                                            backgroundColor: 'var(--success-light)',
+                                            padding: '4px 8px',
+                                            borderRadius: '4px'
+                                        }}>
+                                            Ready
+                                        </span>
+
+                                        <button
+                                            style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }}
+                                            onClick={() => navigate('/health-analyzer')}
+                                        >
+                                            Open
+                                        </button>
                                     </div>
                                 </div>
 
                                 <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>Financial Journey</div>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>
+                                        SmartFeed
+                                    </div>
+
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
-                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/financial-journey')}>Open</button>
+                                        <span style={{
+                                            fontSize: '12px',
+                                            color: 'var(--success)',
+                                            backgroundColor: 'var(--success-light)',
+                                            padding: '4px 8px',
+                                            borderRadius: '4px'
+                                        }}>
+                                            Ready
+                                        </span>
+
+                                        <button
+                                            style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }}
+                                            onClick={() => navigate('/smartfeed')}
+                                        >
+                                            Open
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>
+                                        Financial Journey
+                                    </div>
+
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+                                        <span style={{
+                                            fontSize: '12px',
+                                            color: 'var(--success)',
+                                            backgroundColor: 'var(--success-light)',
+                                            padding: '4px 8px',
+                                            borderRadius: '4px'
+                                        }}>
+                                            Ready
+                                        </span>
+
+                                        <button
+                                            style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }}
+                                            onClick={() => navigate('/financial-journey')}
+                                        >
+                                            Open
+                                        </button>
                                     </div>
                                 </div>
 
@@ -428,10 +507,25 @@ export default function Dashboard() {
                                     'Tax Estimator',
                                     'Investment Advisor'
                                 ].map((mod, i) => (
-                                    <div key={i} style={{ ...styles.moduleCard, ...styles.moduleSoon }} onClick={() => handleFeatureClick('soon')}>
-                                        <div style={{ fontWeight: 'bold', color: 'var(--text2)' }}>{mod}</div>
+                                    <div
+                                        key={i}
+                                        style={{ ...styles.moduleCard, ...styles.moduleSoon }}
+                                        onClick={() => handleFeatureClick('soon')}
+                                    >
+                                        <div style={{ fontWeight: 'bold', color: 'var(--text2)' }}>
+                                            {mod}
+                                        </div>
+
                                         <div style={{ marginTop: '16px' }}>
-                                            <span style={{ fontSize: '12px', color: 'var(--warning)', backgroundColor: 'var(--warning-light)', padding: '4px 8px', borderRadius: '4px' }}>Coming Soon</span>
+                                            <span style={{
+                                                fontSize: '12px',
+                                                color: 'var(--warning)',
+                                                backgroundColor: 'var(--warning-light)',
+                                                padding: '4px 8px',
+                                                borderRadius: '4px'
+                                            }}>
+                                                Coming Soon
+                                            </span>
                                         </div>
                                     </div>
                                 ))}
