@@ -8,6 +8,8 @@ import FinancialHealthResult from "./pages/FinancialHealthResult";
 import SmartFeed from "./pages/SmartFeed";
 import NotFound from "./pages/NotFound";
 import FinancialJourney from './pages/FinancialJourney';
+import LoanRiskAnalyzer from "./pages/LoanRiskAnalyzer";
+import LoanRiskResult from "./pages/LoanRiskResult";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DocumentVault from "./pages/DocumentVault";
 function App() {
@@ -70,6 +72,24 @@ function App() {
                 element={
                     <ProtectedRoute>
                         <DocumentVault />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/loan-analyzer"
+                element={
+                    <ProtectedRoute requireProfile={false}>
+                        <LoanRiskAnalyzer />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/loan-result"
+                element={
+                    <ProtectedRoute requireProfile={false}>
+                        <LoanRiskResult />
                     </ProtectedRoute>
                 }
             />
