@@ -11,15 +11,17 @@ router = APIRouter(
 
 @router.get("/feed", response_model=FeedResponse)
 def get_feed(category: Optional[str] = Query(None), user=Depends(get_current_user)):
-    return SmartFeedService.get_personalized_feed(category=category)
+    # Passing user.id to calculate personalization
+    return SmartFeedService.get_personalized_feed(user_profile_id=user.id, category=category)
+
+@router.get("/search", response_model=FeedResponse)
+def search_articles(q: Optional[str] = Query(None), user=Depends(get_current_user)):
+    # Passing user.id here as well
+    return SmartFeedService.get_personalized_feed(user_profile_id=user.id, search=q)
 
 @router.get("/trending")
 def get_trending(user=Depends(get_current_user)):
     return SmartFeedService.get_trending()
-
-@router.get("/search", response_model=FeedResponse)
-def search_articles(q: Optional[str] = Query(None), user=Depends(get_current_user)):
-    return SmartFeedService.get_personalized_feed(search=q)
 
 @router.get("/dashboard-widgets")
 def get_dashboard_widgets(user=Depends(get_current_user)):

@@ -17,19 +17,6 @@ const SIDEBAR_ITEMS = [
     { label: 'Settings', soon: true },
 ];
 
-// Dynamic emojis to attract attention to headlines
-const categoryEmojis = {
-    markets: '📈',
-    schemes: '🏛️',
-    tax: '🧾',
-    investment: '💼',
-    banking: '🏦',
-    insurance: '🛡️',
-    ai_picks: '🤖',
-    general: '📰',
-    all: '🔥'
-};
-
 const styles = {
     layout: {
         display: 'flex',
@@ -130,7 +117,7 @@ const styles = {
         color: 'var(--text2)',
         lineHeight: '1.5',
         display: '-webkit-box',
-        WebkitLineClamp: 1, // Truncates strictly to 1 line
+        WebkitLineClamp: 1, 
         WebkitBoxOrient: 'vertical',
         overflow: 'hidden',
         marginBottom: '16px'
@@ -228,13 +215,14 @@ const styles = {
         fontSize: '20px',
         color: 'var(--text2)',
         cursor: 'pointer',
-        lineHeight: 1
+        lineHeight: 1,
+        flexShrink:0
     }
 };
 
 export default function SmartFeed() {
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { user, logout } = useAuth(); // Extracted user to power the personalized greeting
 
     const [articles, setArticles] = useState([]);
     const [trending, setTrending] = useState([]);
@@ -248,6 +236,7 @@ export default function SmartFeed() {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('feed');
     const [error, setError] = useState(null);
+    const [featuredArticle, setFeaturedArticle] = useState(null);
 
     useEffect(() => {
         loadInitialData();
@@ -267,9 +256,11 @@ export default function SmartFeed() {
                 smartfeedService.getCategories()
             ]);
             setArticles(feedData.articles || []);
+            setFeaturedArticle(feedData.featured_article || null);
             setTrending(trendingData || []);
             setCategories(categoriesData || []);
         } catch (err) {
+            console.error('SmartFeed: loadInitialData error', err);
             setError('Failed to load SmartFeed. Using fallback data.');
         } finally {
             setLoading(false);
@@ -281,6 +272,7 @@ export default function SmartFeed() {
         try {
             const feedData = await smartfeedService.getFeed({ category });
             setArticles(feedData.articles || []);
+            setFeaturedArticle(feedData.featured_article || null);
         } catch (err) {
             console.error('SmartFeed: loadFeed error', err);
         } finally {
@@ -370,7 +362,7 @@ export default function SmartFeed() {
             <main className="sf-main">
                 <header className="sf-topbar">
                     <div style={{ fontWeight: '600', color: 'var(--navy)', fontSize: '15px' }}>
-                        📰 SmartFeed
+                        SmartFeed
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                         <span style={{ color: 'var(--text2)', fontSize: '13px' }}>{today}</span>
@@ -379,11 +371,14 @@ export default function SmartFeed() {
                 </header>
 
                 <div className="sf-content">
+                    {/* Clean Page Header */}
                     <div className="sf-page-header">
                         <div>
-                            <h1 className="sf-page-title">SmartFeed</h1>
-                            <p className="sf-page-sub">
-                                AI-curated financial news, government schemes, and personalized insights
+                            <h1 className="sf-page-title" style={{ fontSize: '28px', color: 'var(--navy)' }}>
+                                Good morning, {user?.user_metadata?.full_name?.split(' ')[0] || 'User'}
+                            </h1>
+                            <p className="sf-page-sub" style={{ fontSize: '16px', color: 'var(--text2)' }}>
+                                Your Financial Brief
                             </p>
                         </div>
                         <div className="sf-search-wrap">
@@ -401,21 +396,56 @@ export default function SmartFeed() {
 
                     {error && <div className="sf-error">⚠️ {error}</div>}
 
+                    {/* Featured Article Banner */}
+                    {featuredArticle && activeTab === 'feed' && !searchQuery && (
+                        <div style={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '32px', marginBottom: '32px', boxShadow: 'var(--shadow-sm)' }}>
+                            <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--saffron)', letterSpacing: '0.5px', textTransform: 'uppercase', marginBottom: '16px' }}>
+                                Featured Article
+                            </div>
+                            <h2 style={{ fontSize: '24px', color: 'var(--navy)', marginBottom: '16px', lineHeight: '1.3' }}>
+                                {featuredArticle.title}
+                            </h2>
+                            <p style={{ color: 'var(--text2)', fontSize: '15px', marginBottom: '24px', lineHeight: '1.6' }}>
+                                {featuredArticle.summary}
+                            </p>
+                            
+                            {/* Why this matters explanation */}
+                            {featuredArticle.why_it_matters && (
+                                <div style={{ backgroundColor: 'var(--info-light)', borderLeft: '4px solid var(--info)', padding: '16px', borderRadius: '0 4px 4px 0', marginBottom: '24px' }}>
+                                    <div style={{ fontWeight: '700', color: 'var(--info)', fontSize: '13px', marginBottom: '6px', textTransform: 'uppercase' }}>
+                                        Why this matters to you
+                                    </div>
+                                    <div style={{ color: 'var(--text)', fontSize: '14px', lineHeight: '1.5' }}>
+                                        {featuredArticle.why_it_matters}
+                                    </div>
+                                </div>
+                            )}
+                            <button 
+                                style={{ padding: '10px 20px', backgroundColor: 'var(--navy)', color: 'var(--white)', border: 'none', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 'bold' }} 
+                                onClick={() => window.open(featuredArticle.url, '_blank')}
+                            >
+                                Read Full Story &rarr;
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Clean Tabs */}
                     <div className="sf-tabs">
                         <button
                             className={`sf-tab ${activeTab === 'feed' ? 'active' : ''}`}
                             onClick={() => setActiveTab('feed')}
                         >
-                            📰 Feed
+                            Feed
                         </button>
                         <button
                             className={`sf-tab ${activeTab === 'bookmarks' ? 'active' : ''}`}
                             onClick={() => setActiveTab('bookmarks')}
                         >
-                            🔖 Bookmarks {bookmarkedArticles.length > 0 && `(${bookmarkedArticles.length})`}
+                            Bookmarks {bookmarkedArticles.length > 0 && `(${bookmarkedArticles.length})`}
                         </button>
                     </div>
 
+                    {/* Clean Categories */}
                     {activeTab === 'feed' && (
                         <div className="sf-categories">
                             {categories.map(cat => (
@@ -427,23 +457,25 @@ export default function SmartFeed() {
                                         setSearchQuery('');
                                     }}
                                 >
-                                    {cat.emoji} {cat.label}
+                                    {cat.label}
                                 </button>
                             ))}
                         </div>
                     )}
 
+                    {/* Clean Trending Strip */}
                     {activeTab === 'feed' && !searchQuery && trending.length > 0 && (
                         <div className="sf-trending-strip">
-                            <div className="sf-trending-label">🔥 Trending Now</div>
+                            <div className="sf-trending-label" style={{ fontWeight: '700', color: 'var(--text)' }}>Trending Updates</div>
                             <div className="sf-trending-items">
                                 {trending.map(item => (
                                     <div
                                         key={item.id}
                                         className="sf-trending-item"
                                         onClick={() => handleSearch(item.title.split(' ').slice(0, 3).join(' '))}
+                                        style={{ border: '1px solid var(--border2)' }}
                                     >
-                                        📌 {item.title}
+                                        {item.title}
                                     </div>
                                 ))}
                             </div>
@@ -461,7 +493,6 @@ export default function SmartFeed() {
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
                             {displayArticles.map(article => {
                                 const isBookmarked = article.bookmarked || bookmarkedIds.has(article.id);
-                                const catEmoji = categoryEmojis[article.category] || categoryEmojis.general;
 
                                 return (
                                     <div
@@ -483,8 +514,16 @@ export default function SmartFeed() {
                                                     {isBookmarked ? '🔖' : '📑'}
                                                 </button>
                                             </div>
-                                            <h3 style={styles.cardTitle}>{catEmoji} {article.title}</h3>
+                                            <h3 style={styles.cardTitle}>{article.title}</h3>
                                             <p style={styles.cardSummary}>{article.summary}</p>
+
+                                            {/* Standard Card "Why this matters" snippet */}
+                                            {article.why_it_matters && (
+                                                <div style={{ backgroundColor: 'var(--info-light)', padding: '10px 12px', borderRadius: '4px', marginBottom: '16px', borderLeft: '3px solid var(--info)' }}>
+                                                    <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--info)', marginBottom: '4px', textTransform: 'uppercase' }}>Why this matters</div>
+                                                    <div style={{ fontSize: '12px', color: 'var(--text2)', lineHeight: '1.4' }}>{article.why_it_matters}</div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div style={styles.cardFooter}>
@@ -515,7 +554,7 @@ export default function SmartFeed() {
                                     {selectedArticle.tag}
                                 </span>
                                 <h2 style={styles.modalTitle}>
-                                    {categoryEmojis[selectedArticle.category] || categoryEmojis.general} {selectedArticle.title}
+                                    {selectedArticle.title}
                                 </h2>
                                 <div style={styles.cardMeta}>
                                     <span>{selectedArticle.source}</span>
@@ -548,9 +587,11 @@ export default function SmartFeed() {
                                 {selectedArticle.content ? (
                                     <>
                                         <p>
-                                            {selectedArticle.content.replace(/\[\+\d+\s+chars\]/g, '')}
+                                            {selectedArticle.content
+                                                        .replace(/<[^>]*>?/gm, '') // This regex strips out all HTML tags
+                                                        .replace(/\[\+\d+\s+chars\]/g, '')}
                                         </p>
-                                        {/* Add this button to link out to the full article */}
+                                        {/* Link out to the full article */}
                                         {selectedArticle.url && (
                                             <a
                                                 href={selectedArticle.url}

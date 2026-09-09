@@ -18,7 +18,12 @@ class SmartFeedIngestion:
         "insurance": ["term insurance", "life insurance", "health insurance", "policy", "premium", "claim"],
     }
 
-    IGNORE_KEYWORDS = ["coach", "cricket", "match", "movie", "film", "cockroach", "hotel", "food safety", "actor", "actress"]
+    # Heavily expanded blacklist for non-financial context
+    IGNORE_KEYWORDS = [
+        "murder", "shooting", "kill", "crime", "rape", "assault", "police", "fbi", "mosque",
+        "coach", "cricket", "match", "movie", "film", "cockroach", "actor", "actress", 
+        "california", "florida", "us news"
+    ]
 
     @staticmethod
     def fetch_live_news() -> list:
@@ -28,12 +33,16 @@ class SmartFeedIngestion:
             
         current_month_start = datetime.today().replace(day=1).strftime('%Y-%m-%d')
         
-        # Highly targeted query for real Indian financial news
-        query = '("stock market" OR "NIFTY" OR "RBI" OR "income tax" OR "mutual fund" OR "government scheme" OR "finance minister") AND India'
+        # Stricter query targeting the Indian market
+        query = '("stock market" OR "NIFTY" OR "RBI" OR "tax" OR "mutual fund" OR "economy" OR "finance") AND (India OR Indian)'
+        
+        # ONLY pull from top Indian financial publishers to guarantee context
+        domains = "economictimes.indiatimes.com,livemint.com,moneycontrol.com,business-standard.com,financialexpress.com,ndtvprofit.com"
             
         url = (
             f"https://newsapi.org/v2/everything?"
             f"q={query}&"
+            f"domains={domains}&"
             f"from={current_month_start}&"
             f"language=en&"
             f"sortBy=publishedAt&"
@@ -65,7 +74,8 @@ class SmartFeedIngestion:
             if any(bad_word in content for bad_word in SmartFeedIngestion.IGNORE_KEYWORDS):
                 continue
 
-            detected_category = "markets"
+            # FIX: Default to 'general' instead of 'markets' so random news isn't tagged as investment
+            detected_category = "general"
             for cat, keywords in SmartFeedIngestion.CATEGORY_RULES.items():
                 if any(kw in content for kw in keywords):
                     detected_category = cat
@@ -79,7 +89,7 @@ class SmartFeedIngestion:
                 "source": article.get("source", {}).get("name", "Financial Express"),
                 "category": detected_category,
                 "image_url": article.get("urlToImage"),
-                "is_trending": any(term in content for term in ["nifty", "rbi", "tax", "sensex"]),
+                "is_trending": any(term in content for term in ["nifty", "rbi", "tax", "sensex", "economy"]),
                 "is_government_scheme": detected_category == "schemes",
                 "published_at": article.get("publishedAt", datetime.now().isoformat())
             }
@@ -90,7 +100,7 @@ class SmartFeedIngestion:
             except Exception as e:
                 print(f"Skipping DB insert error: {e}")
                 
-        print(f"Successfully processed and stored {inserted_count} financial articles.")
+        print(f"Successfully processed and stored {inserted_count} clean financial articles.")
 
 if __name__ == "__main__":
     print("Starting Clean Financial News Ingestion Pipeline...")

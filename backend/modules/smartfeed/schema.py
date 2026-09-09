@@ -18,9 +18,19 @@ class ArticleResponse(ArticleBase):
     id: str
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    # New fields for personalization and UI enrichment
+    relevance_score: Optional[int] = None
+    why_it_matters: Optional[str] = None
+    tag: Optional[str] = None
+    tag_color: Optional[str] = None
+    ai_summary: Optional[str] = None
+    read_time: Optional[int] = None
 
 class FeedResponse(BaseModel):
+    # Added featured_article for the UI hierarchy
+    featured_article: Optional[ArticleResponse] = None
     articles: List[ArticleResponse]
+    total: Optional[int] = None
 
 class BookmarkRequest(BaseModel):
     article_id: str

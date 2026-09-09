@@ -72,3 +72,53 @@ class SmartFeedRepository:
             { "id": "insurance", "label": "Insurance", "emoji": "🛡️" },
             { "id": "ai_picks", "label": "AI Picks", "emoji": "🤖" },
         ]
+    @staticmethod
+    def get_user_context(auth_user_id: str) -> dict:
+        """
+        Fetches the user's profile, financial profile, and latest health report
+        to build the context for the SmartFeed Relevance Engine.
+        """
+        context = {
+            "location": None,
+            "employment_status": None,
+            "financial_goal": None,
+            "health_score": None,
+            "recommendations": [] # FIX: Changed from 'weaknesses'
+        }
+
+        # 1. Fetch user_profile using the AUTH user_id
+        user_res = supabase.table("user_profile").select("id, state").eq("user_id", auth_user_id).execute()
+        
+        if not user_res.data:
+            return context
+            
+        actual_profile_id = user_res.data[0].get("id")
+        context["location"] = user_res.data[0].get("state")
+
+        # 2. Fetch Goal & Employment
+        fin_res = supabase.table("financial_profile").select("id, employment_status, financial_goal").eq("user_profile_id", actual_profile_id).execute()
+        
+        if fin_res.data:
+            fin_profile = fin_res.data[0]
+            context["employment_status"] = fin_profile.get("employment_status")
+            context["financial_goal"] = fin_profile.get("financial_goal")
+            
+            # 3. FIX: Fetch 'recommendations' instead of 'weaknesses'
+            health_res = supabase.table("financial_health_report")\
+                .select("financial_score, recommendations")\
+                .eq("financial_profile_id", fin_profile["id"])\
+                .order("generated_at", desc=True)\
+                .limit(1)\
+                .execute()
+                
+            if health_res.data:
+                context["health_score"] = health_res.data[0].get("financial_score")
+                
+                # Safely handle the recommendations text
+                recs_data = health_res.data[0].get("recommendations")
+                if isinstance(recs_data, str):
+                    context["recommendations"] = [recs_data]
+                else:
+                    context["recommendations"] = recs_data or []
+
+        return context

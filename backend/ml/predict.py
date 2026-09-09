@@ -20,7 +20,7 @@ from xgboost import XGBRegressor
 
 BASE_DIR = Path(__file__).resolve().parent
 
-MODEL_PATH = BASE_DIR / "models" / "financial_health_model.json"
+MODEL_PATH = BASE_DIR / "models" / "financial_health_model.pkl"
 FEATURES_PATH = BASE_DIR / "models" / "model_features.pkl"
 
 
