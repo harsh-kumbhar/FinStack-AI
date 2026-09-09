@@ -1,0 +1,2185 @@
+/* ==========================================================
+   FinStack Tax Estimator Module Styles
+   Follows project CSS variable system from variables.css
+   ========================================================== */
+
+/* ── Page Layout ── */
+.te-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: var(--bg);
+    font-family: 'Noto Sans', 'Segoe UI', sans-serif;
+}
+
+.te-main {
+    flex: 1;
+    margin-left: 240px;
+    display: flex;
+    flex-direction: column;
+}
+
+.te-topbar {
+    position: fixed;
+    top: 0;
+    left: 240px;
+    right: 0;
+    height: 64px;
+    background-color: var(--white);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 32px;
+    z-index: 90;
+    box-shadow: var(--shadow-sm);
+}
+
+.te-content {
+    margin-top: 64px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1040px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ── Page Header ── */
+.te-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.te-title {
+    font-family: 'Noto Serif', Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.2;
+}
+
+.te-subtitle {
+    font-size: 14px;
+    color: var(--text2);
+    margin-top: 4px;
+}
+
+/* ── Stepper ── */
+.te-stepper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 8px;
+}
+
+.te-step-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: var(--transition);
+}
+
+.te-step-item.active {
+    opacity: 1;
+    font-weight: 700;
+}
+
+.te-step-item.completed {
+    opacity: 0.9;
+}
+
+.te-step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    background-color: var(--bg2);
+    color: var(--text2);
+    border: 1px solid var(--border2);
+}
+
+.te-step-item.active .te-step-circle {
+    background-color: var(--saffron);
+    color: var(--white);
+    border-color: var(--saffron);
+}
+
+.te-step-item.completed .te-step-circle {
+    background-color: var(--india-green);
+    color: var(--white);
+    border-color: var(--india-green);
+}
+
+.te-step-label {
+    font-size: 13px;
+    color: var(--text);
+}
+
+.te-step-divider {
+    flex: 1;
+    height: 2px;
+    background-color: var(--border);
+    margin: 0 12px;
+}
+
+/* ── Cards & Containers ── */
+.te-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    box-shadow: var(--shadow-sm);
+}
+
+/* ── Landing Entry Hero ── */
+.te-landing-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.te-landing-banner {
+    background: linear-gradient(135deg, #003580 0%, #0052CC 100%);
+    color: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 36px;
+    box-shadow: var(--shadow);
+}
+
+.te-landing-title {
+    font-family: 'Noto Serif', Georgia, serif;
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 12px;
+}
+
+.te-landing-desc {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    max-width: 680px;
+}
+
+.te-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.te-feature-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.te-feature-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--info-light);
+    color: var(--navy2);
+}
+
+.te-feature-title {
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 16px;
+}
+
+.te-feature-text {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+}
+
+.te-reuse-notice {
+    background-color: var(--info-light);
+    border: 1px solid #BFDBFE;
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.te-reuse-text {
+    font-size: 13.5px;
+    color: var(--navy);
+    line-height: 1.5;
+}
+
+/* ── Source Badges ── */
+.te-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.te-badge-profile {
+    background-color: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #BFDBFE;
+}
+
+.te-badge-user {
+    background-color: #ECFDF5;
+    color: #047857;
+    border: 1px solid #A7F3D0;
+}
+
+.te-badge-default {
+    background-color: var(--bg2);
+    color: var(--text2);
+    border: 1px solid var(--border);
+}
+
+.te-badge-doc {
+    background-color: #FAF5FF;
+    color: #7E22CE;
+    border: 1px solid #E9D5FF;
+}
+
+/* ── Form Controls ── */
+.te-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.te-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.te-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.te-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.te-input-prefix {
+    position: absolute;
+    left: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text3);
+}
+
+.te-input {
+    width: 100%;
+    padding: 12px 14px 12px 34px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background-color: var(--white);
+    color: var(--text);
+    font-size: 15px;
+    transition: var(--transition);
+}
+
+.te-input-no-prefix {
+    padding-left: 14px;
+}
+
+.te-input:focus {
+    outline: none;
+    border-color: var(--navy2);
+    box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.12);
+}
+
+.te-helper {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.4;
+}
+
+.te-helper-annualized {
+    color: var(--navy2);
+    font-weight: 500;
+}
+
+/* ── Conditional Card Toggles ── */
+.te-cond-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    background-color: var(--bg);
+    transition: var(--transition);
+}
+
+.te-cond-card.active {
+    background-color: var(--white);
+    border-color: var(--navy2);
+    box-shadow: var(--shadow-sm);
+}
+
+.te-cond-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+}
+
+.te-cond-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--navy);
+}
+
+.te-toggle-group {
+    display: flex;
+    gap: 8px;
+}
+
+.te-toggle-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--border);
+    background-color: var(--white);
+    color: var(--text2);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.te-toggle-btn.active {
+    background-color: var(--navy);
+    color: var(--white);
+    border-color: var(--navy);
+}
+
+.te-cond-content {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.te-rule-badge-box {
+    background-color: var(--warning-light);
+    border: 1px solid #FDE68A;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #92400E;
+    line-height: 1.4;
+    margin-top: 10px;
+}
+
+/* ── Buttons ── */
+.te-btn-primary {
+    padding: 12px 24px;
+    background-color: var(--saffron);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+.te-btn-primary:hover {
+    background-color: var(--saffron2);
+}
+
+.te-btn-secondary {
+    padding: 12px 24px;
+    background-color: var(--bg2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+.te-btn-secondary:hover {
+    background-color: #E2E8F0;
+}
+
+.te-actions-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+}
+
+/* ── Missing Information Review Modal / Panel ── */
+.te-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 20, 50, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+}
+
+.te-modal-box {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 600px;
+    padding: 32px;
+    box-shadow: var(--shadow-md);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.te-review-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13.5px;
+}
+
+.te-review-table th, .te-review-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+}
+
+.te-review-table th {
+    background-color: var(--bg);
+    color: var(--navy);
+    font-weight: 700;
+}
+
+.te-warning-notice {
+    background-color: var(--warning-light);
+    border: 1px solid #FDE68A;
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #92400E;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+/* ── Results Cards ── */
+.te-regime-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+}
+
+.te-regime-card {
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+}
+
+.te-regime-card.recommended {
+    border-color: var(--india-green);
+    background-color: #FAFFFC;
+}
+
+.te-recommended-pill {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background-color: var(--india-green);
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.te-regime-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+}
+
+.te-tax-amount {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--text);
+    margin: 12px 0 16px 0;
+}
+
+.te-breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+}
+
+.te-breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text2);
+}
+
+.te-breakdown-row.total {
+    font-weight: 700;
+    color: var(--text);
+    border-top: 1px dashed var(--border);
+    padding-top: 8px;
+    font-size: 14px;
+}
+
+.te-savings-card {
+    background: linear-gradient(135deg, #138808 0%, #1B9E18 100%);
+    color: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+}
+
+.te-disclaimer-box {
+    background-color: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.5;
+}
+
+/* ── Top Metrics Grid ── */
+.te-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.te-metric-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    box-shadow: var(--shadow-sm);
+}
+
+.te-metric-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text3);
+    font-weight: 700;
+}
+
+.te-metric-val {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--navy);
+}
+
+.te-metric-sub {
+    font-size: 12px;
+    color: var(--text2);
+}
+
+/* ── Comparative Breakdown Table ── */
+.te-comparison-table-wrap {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+    overflow-x: auto;
+}
+
+.te-comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.te-comp-table th, .te-comp-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+}
+
+.te-comp-table th:first-child, .te-comp-table td:first-child {
+    text-align: left;
+    font-weight: 600;
+}
+
+.te-comp-table th {
+    background-color: var(--bg);
+    color: var(--navy);
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.te-comp-table tr.highlight-row {
+    background-color: #F8FAFC;
+    font-weight: 700;
+}
+
+.te-comp-table tr.total-row td {
+    font-size: 15px;
+    font-weight: 800;
+    border-top: 2px solid var(--navy2);
+    border-bottom: 2px solid var(--navy2);
+    color: var(--navy);
+}
+
+/* ── Explanation & What-If Sections ── */
+.te-explanation-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+}
+
+.te-explanation-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.te-explanation-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13.5px;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+.te-opportunity-card {
+    background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+    border: 1px solid #86EFAC;
+    border-radius: var(--radius-lg);
+    padding: 22px 26px;
+    margin-bottom: 24px;
+}
+
+.te-opportunity-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #166534;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.te-opportunity-text {
+    font-size: 14px;
+    color: #14532D;
+    line-height: 1.5;
+}
+
+/* ══════════════════════════════════════════════════
+   MODULE 4: TRANSPARENCY & TRUST STYLES
+   ══════════════════════════════════════════════════ */
+
+/* ── 1. Expandable Calculation Flow Pipeline ── */
+.te-flow-pipeline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin: 16px 0 20px 0;
+}
+
+.te-flow-pipeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.te-flow-step-pill {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--navy);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    box-shadow: var(--shadow-sm);
+}
+
+.te-flow-arrow {
+    color: var(--text3);
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.te-collapsible-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.te-collapsible-header:hover h3 {
+    color: var(--navy2);
+}
+
+.te-toggle-pill {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.te-flow-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 14px;
+    font-size: 13px;
+}
+
+.te-flow-table th {
+    background: var(--bg);
+    padding: 10px 14px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy);
+    border-bottom: 2px solid var(--border);
+}
+
+.te-flow-table th:first-child, .te-flow-table td:first-child {
+    text-align: left;
+}
+
+.te-flow-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    text-align: right;
+    vertical-align: top;
+}
+
+.te-flow-desc {
+    font-size: 12px;
+    color: var(--text2);
+    margin-top: 3px;
+    line-height: 1.4;
+}
+
+.te-flow-hint {
+    display: inline-block;
+    font-size: 10.5px;
+    background: #EFF6FF;
+    color: #1E40AF;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    margin-top: 2px;
+}
+
+/* ── 2. Deduction Breakdown Grid ── */
+.te-deduction-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.te-deduction-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: var(--transition);
+}
+
+.te-deduction-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--navy2);
+}
+
+.te-deduction-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.te-deduction-section {
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.te-deduction-amounts {
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin: 10px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.te-deduction-amount-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.te-deduction-amount-label {
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+}
+
+.te-deduction-amount-val {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.te-deduction-why {
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.45;
+    margin-top: 6px;
+}
+
+/* ── 3. Why This Regime Card ── */
+.te-why-regime-card {
+    background: #FAF5FF;
+    border: 1px solid #E9D5FF;
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.te-why-headline {
+    font-size: 18px;
+    font-weight: 800;
+    color: #581C87;
+    margin-bottom: 6px;
+}
+
+.te-why-driver {
+    display: inline-block;
+    background: #F3E8FF;
+    color: #6B21A8;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-bottom: 14px;
+}
+
+.te-why-bullets {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.te-why-bullet {
+    display: flex;
+    gap: 10px;
+    font-size: 13.5px;
+    color: #4C1D95;
+    line-height: 1.5;
+}
+
+/* ── 4. Trust & Provenance Metadata Card ── */
+.te-trust-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 24px;
+}
+
+.te-trust-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+    margin-top: 16px;
+}
+
+.te-trust-section {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+}
+
+.te-trust-section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.te-provenance-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.te-provenance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.te-assumptions-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.5;
+}
+
+.te-assumptions-list li {
+    margin-bottom: 5px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MODULE 5: PERSONALIZED OPPORTUNITIES & WHAT-IF WORKBENCH
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Personalized Opportunities Grid */
+.te-opp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.te-opp-card {
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.te-opp-card:hover {
+    border-color: var(--navy2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.te-opp-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.te-opp-section {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+    color: var(--saffron-dark);
+}
+
+.te-opp-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 3px 0 0 0;
+}
+
+.te-opp-status-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.te-opp-status-badge.status-missing {
+    background: #FFF7ED;
+    color: #C2410C;
+    border: 1px solid #FFEDD5;
+}
+
+.te-opp-status-badge.status-gap {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid #DBEAFE;
+}
+
+.te-opp-status-badge.status-opt {
+    background: #F0FDF4;
+    color: #15803D;
+    border: 1px solid #DCFCE7;
+}
+
+.te-opp-why {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.45;
+    margin-bottom: 10px;
+}
+
+.te-opp-impact {
+    background: #F0FDF4;
+    border: 1px solid #DCFCE7;
+    border-radius: 6px;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.te-opp-impact-label {
+    font-weight: 600;
+    color: #166534;
+}
+
+.te-opp-impact-val {
+    font-weight: 800;
+    color: #15803D;
+    font-size: 14px;
+}
+
+.te-opp-docs {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+}
+
+.te-opp-docs-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--navy);
+    margin-bottom: 6px;
+}
+
+.te-opp-docs-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.4;
+}
+
+.te-opp-caution {
+    background: #FFFBEB;
+    border-left: 3px solid #F59E0B;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    color: #92400E;
+    line-height: 1.4;
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 10px;
+}
+
+.te-opp-action-btn {
+    width: 100%;
+    padding: 8px 14px;
+    background: #FFFFFF;
+    color: var(--navy);
+    border: 1.5px solid var(--navy);
+    border-radius: var(--radius-sm);
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.te-opp-action-btn:hover {
+    background: var(--navy);
+    color: var(--white);
+}
+
+/* What-If Workbench */
+.te-non-mutate-pill {
+    background: #F1F5F9;
+    border: 1px solid #CBD5E1;
+    color: #475569;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.te-whatif-tabs {
+    display: flex;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-top: 14px;
+    overflow-x: auto;
+}
+
+.te-whatif-tab {
+    padding: 8px 14px;
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.te-whatif-tab:hover {
+    background: #F1F5F9;
+    color: var(--navy);
+}
+
+.te-whatif-tab.active {
+    background: var(--navy);
+    color: var(--white);
+    border-color: var(--navy);
+}
+
+.te-whatif-controls-panel {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin-top: 14px;
+}
+
+.te-btn-pill {
+    padding: 6px 12px;
+    background: #FFFFFF;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.te-btn-pill:hover {
+    border-color: var(--navy2);
+    color: var(--navy);
+}
+
+.te-btn-pill.active {
+    background: var(--navy2);
+    color: var(--white);
+    border-color: var(--navy2);
+}
+
+.te-whatif-delta-banner {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.te-whatif-delta-pill {
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.te-whatif-delta-pill.pill-save {
+    background: #DCFCE7;
+    color: #15803D;
+    border: 1px solid #86EFAC;
+}
+
+.te-whatif-delta-pill.pill-tax {
+    background: #FFEDD5;
+    color: #C2410C;
+    border: 1px solid #FDBA74;
+}
+
+.te-whatif-delta-pill.pill-neutral {
+    background: #F1F5F9;
+    color: #475569;
+    border: 1px solid #CBD5E1;
+}
+
+.te-whatif-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-top: 14px;
+}
+
+.te-whatif-card {
+    background: #FFFFFF;
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.te-whatif-card.current {
+    border: 2px solid #E2E8F0;
+}
+
+.te-whatif-card.scenario {
+    border: 2px solid var(--navy2);
+    background: #FAFCFF;
+}
+
+.te-whatif-card-badge {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.te-whatif-card-badge.current {
+    background: #E2E8F0;
+    color: #475569;
+}
+
+.te-whatif-card-badge.scenario {
+    background: var(--navy2);
+    color: var(--white);
+}
+
+.te-whatif-regime-title {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--navy);
+    margin: 0;
+}
+
+.te-whatif-tax {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--navy);
+    margin: 8px 0 2px 0;
+}
+
+.te-whatif-effective {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 12px;
+}
+
+.te-whatif-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+}
+
+.te-whatif-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--text2);
+}
+
+.te-whatif-reasons {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 18px;
+    margin-top: 14px;
+}
+
+.te-whatif-reason-item {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.45;
+    margin-bottom: 4px;
+}
+
+/* ════════════════════════════════════════════════════════════
+   MODULE 6: LEARN / TAX EDUCATION EXPERIENCES
+   ════════════════════════════════════════════════════════════ */
+
+.te-learn-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: teFadeIn 0.2s ease-out;
+}
+
+.te-learn-modal-container {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border);
+    max-width: 1020px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.te-learn-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 24px 32px 18px 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 100%);
+}
+
+.te-learn-modal-title {
+    font-family: 'Noto Serif', Georgia, serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.te-learn-modal-subtitle {
+    font-size: 13.5px;
+    color: var(--text2);
+    margin: 6px 0 0 0;
+    line-height: 1.45;
+}
+
+.te-learn-tabs-bar {
+    display: flex;
+    gap: 8px;
+    padding: 12px 32px;
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+}
+
+.te-learn-tab-btn {
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    background: transparent;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.te-learn-tab-btn:hover {
+    color: var(--navy);
+    background: #F1F5F9;
+}
+
+.te-learn-tab-btn.active {
+    background: #EFF6FF;
+    color: var(--blue);
+    border-color: #BFDBFE;
+}
+
+.te-learn-body {
+    padding: 28px 32px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ── Financial Year Visual Timeline ── */
+.te-fy-timeline-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.te-fy-timeline-banner {
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    color: var(--white);
+    padding: 24px 28px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.te-fy-timeline-stages {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 20px;
+}
+
+.te-fy-stage-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-sm);
+}
+
+.te-fy-stage-card.accent-blue {
+    border-top: 4px solid var(--blue);
+}
+
+.te-fy-stage-card.accent-purple {
+    border-top: 4px solid #8B5CF6;
+}
+
+.te-fy-stage-badge {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.te-fy-stage-badge.blue {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.te-fy-stage-badge.purple {
+    background: #EDE9FE;
+    color: #5B21B6;
+}
+
+.te-fy-stage-title {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--navy);
+    margin: 0 0 6px 0;
+}
+
+.te-fy-stage-span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue);
+    background: #EFF6FF;
+    padding: 4px 10px;
+    border-radius: 4px;
+    margin-bottom: 12px;
+}
+
+.te-fy-stage-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+}
+
+.te-fy-stage-bullets {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.6;
+}
+
+.te-fy-connector-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text3);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+/* ── Calculation Flow Stages Funnel ── */
+.te-calc-flow-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.te-calc-flow-card {
+    display: flex;
+    gap: 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--white);
+    transition: var(--transition);
+}
+
+.te-calc-flow-card:hover {
+    border-color: #93C5FD;
+    box-shadow: var(--shadow-sm);
+}
+
+.te-calc-stage-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #EFF6FF;
+    color: var(--blue);
+    font-weight: 800;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.te-calc-flow-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.te-calc-flow-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.te-calc-stage-title {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 0;
+}
+
+.te-calc-stage-sub {
+    font-size: 12px;
+    color: var(--text3);
+    font-weight: 500;
+}
+
+.te-calc-stage-desc {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.45;
+    margin: 4px 0 6px 0;
+}
+
+.te-calc-formula-box {
+    display: inline-block;
+    background: #F8FAFC;
+    border: 1px dashed #CBD5E1;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    color: #334155;
+    font-weight: 600;
+}
+
+/* ── Regimes & Slabs Comparison ── */
+.te-learn-regimes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.te-learn-regime-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.te-learn-regime-card.featured {
+    border-color: #93C5FD;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.te-learn-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.te-learn-table th {
+    background: #F8FAFC;
+    color: var(--text2);
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.te-learn-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--navy);
+}
+
+/* ── Statutory Deductions Caps ── */
+.te-deduction-caps-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.te-deduction-cap-card {
+    background: #F8FAFC;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+}
+
+.te-cap-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.te-cap-code {
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--navy);
+}
+
+.te-cap-amount {
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--blue);
+}
+
+/* ── Glossary Terms Dictionary ── */
+.te-glossary-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.te-glossary-search-input {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+    color: var(--navy);
+    outline: none;
+    transition: var(--transition);
+}
+
+.te-glossary-search-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.te-glossary-categories {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.te-glossary-cat-pill {
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.te-glossary-cat-pill:hover {
+    border-color: #94A3B8;
+}
+
+.te-glossary-cat-pill.active {
+    background: var(--navy);
+    color: var(--white);
+    border-color: var(--navy);
+}
+
+.te-glossary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.te-glossary-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+.te-glossary-card:hover {
+    border-color: #93C5FD;
+    box-shadow: var(--shadow-md);
+}
+
+.te-glossary-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.te-glossary-term {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--navy);
+    margin: 0;
+}
+
+.te-glossary-cat-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #F1F5F9;
+    color: #475569;
+}
+
+.te-glossary-short-def {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1E293B;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.te-glossary-detail {
+    font-size: 12.5px;
+    color: var(--text2);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.te-glossary-example-box {
+    background: #F8FAFC;
+    border-left: 3px solid var(--blue);
+    padding: 8px 12px;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-size: 12px;
+    color: #334155;
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+    .te-learn-modal-header {
+        padding: 16px 20px;
+    }
+    .te-learn-tabs-bar {
+        padding: 10px 16px;
+    }
+    .te-learn-body {
+        padding: 18px 20px;
+    }
+    .te-fy-timeline-stages {
+        grid-template-columns: 1fr;
+    }
+    .te-fy-connector-arrow {
+        transform: rotate(90deg);
+        margin: 8px 0;
+    }
+    .te-learn-regimes-grid {
+        grid-template-columns: 1fr;
+    }
+    .te-glossary-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==========================================================
+   MODULE 7: HISTORY ENHANCEMENTS & DOCUMENT VAULT BOUNDARY
+   ========================================================== */
+
+/* ── History Table & Action Buttons ── */
+.te-history-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.te-journey-milestone-card {
+    background: linear-gradient(135deg, #F0FDF4 0%, #ECFDF5 100%);
+    border: 1px solid #A7F3D0;
+    border-radius: var(--radius-md);
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.te-journey-milestone-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.te-journey-badge {
+    padding: 4px 10px;
+    background: #059669;
+    color: var(--white);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+}
+
+.te-compare-action-bar {
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: var(--radius-md);
+    padding: 12px 18px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.te-btn-xs {
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid transparent;
+}
+
+.te-btn-xs-primary {
+    background: var(--navy);
+    color: var(--white);
+}
+
+.te-btn-xs-primary:hover:not(:disabled) {
+    background: var(--blue);
+}
+
+.te-btn-xs-outline {
+    background: var(--white);
+    border: 1px solid var(--border);
+    color: var(--navy);
+}
+
+.te-btn-xs-outline:hover:not(:disabled) {
+    background: #F8FAFC;
+    border-color: var(--blue);
+}
+
+.te-history-actions-cell {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.te-table-row-selected {
+    background-color: #F0F9FF !important;
+}
+
+/* ── Generic Modal Overlays ── */
+.te-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.te-modal-box {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+}
+
+.te-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: #FAFAFA;
+}
+
+.te-modal-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── Comparison Modal Styling ── */
+.te-comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.te-comparison-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    background: #F8FAFC;
+}
+
+.te-delta-summary-box {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    border: 1px solid #93C5FD;
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+}
+
+.te-delta-metrics-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.te-delta-metric-tile {
+    background: var(--white);
+    border: 1px solid #BFDBFE;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+}
+
+/* ── Document Vault Boundary Styles ── */
+.te-doc-vault-boundary-card {
+    background: #FFFBEB;
+    border: 1.5px solid #FCD34D;
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    margin-bottom: 20px;
+}
+
+.te-doc-vault-guardrail-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #FEF3C7;
+    border-left: 4px solid #D97706;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #92400E;
+    line-height: 1.4;
+}
+
+.te-doc-field-review-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 13px;
+}
+
+.te-doc-field-review-table th {
+    background: #F1F5F9;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 700;
+    color: #334155;
+    border-bottom: 1px solid var(--border);
+}
+
+.te-doc-field-review-table td {
+    padding: 12px;
+    border-bottom: 1px solid #E2E8F0;
+    vertical-align: middle;
+}
+
+.te-doc-action-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.te-btn-decision {
+    padding: 4px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    border: 1px solid #CBD5E1;
+    background: var(--white);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.te-btn-decision.accept.active {
+    background: #10B981;
+    color: var(--white);
+    border-color: #059669;
+}
+
+.te-btn-decision.modify.active {
+    background: #3B82F6;
+    color: var(--white);
+    border-color: #2563EB;
+}
+
+.te-btn-decision.reject.active {
+    background: #EF4444;
+    color: var(--white);
+    border-color: #DC2626;
+}
+
+@media (max-width: 768px) {
+    .te-comparison-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+

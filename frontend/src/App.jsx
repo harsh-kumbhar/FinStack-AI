@@ -6,6 +6,7 @@ import ProfileCompletion from "./pages/ProfileCompletion";
 import FinancialHealthAnalyzer from "./pages/FinancialHealthAnalyzer";
 import FinancialHealthResult from "./pages/FinancialHealthResult";
 import SmartFeed from "./pages/SmartFeed";
+import TaxEstimator from "./pages/TaxEstimator";
 import NotFound from "./pages/NotFound";
 import FinancialJourney from './pages/FinancialJourney';
 import LoanRiskAnalyzer from "./pages/LoanRiskAnalyzer";
@@ -90,6 +91,15 @@ function App() {
                 element={
                     <ProtectedRoute requireProfile={false}>
                         <LoanRiskResult />
+                    </ProtectedRoute>
+                }
+            />
+
+            <Route
+                path="/tax-estimator"
+                element={
+                    <ProtectedRoute requireProfile={false}>
+                        <TaxEstimator />
                     </ProtectedRoute>
                 }
             />

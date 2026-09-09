@@ -12,7 +12,7 @@ const SIDEBAR_ITEMS = [
     { label: 'SmartFeed', path: '/smartfeed', active: true },
     { label: 'Document Intelligence', soon: true },
     { label: 'Loan Risk Assessment', soon: true },
-    { label: 'Tax Estimator', soon: true },
+    { label: 'Tax Estimator', path: '/tax-estimator' },
     { label: 'Investment Advisor', soon: true },
     { label: 'Settings', soon: true },
 ];

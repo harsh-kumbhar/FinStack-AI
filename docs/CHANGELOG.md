@@ -109,6 +109,29 @@ Status
 
 ---
 
+## Tax Estimator
+
+### Completed
+
+- Module specification created.
+- Deterministic calculation engine foundation implemented.
+- Centralized, version-controlled tax rules implemented (FY 2024-25).
+- Comprehensive unit tests written and verified against authoritative sources.
+- Technical Decision Log created.
+- Backend API layer implemented (POST calculate, GET history, GET detail).
+- Service layer implemented (TaxEstimatorService).
+- Database migration created (tax_assessments table with RLS).
+- Authentication integrated via existing get_current_user mechanism.
+- User isolation enforced (service-layer ownership + database RLS).
+- API/service/database integration tests implemented (28 tests).
+- V1 history is intentionally non-paginated (documented decision).
+
+Status
+
+🟡 In Progress (Frontend pending — Batch 3)
+
+---
+
 ## Machine Learning
 
 ### Completed
