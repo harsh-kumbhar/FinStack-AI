@@ -26,3 +26,7 @@ build/
 *.log
 
 *.joblib
+
+# old models
+backend/ml/models/financial_health_model old.json
+backend/ml/models/model_features old.pkl
