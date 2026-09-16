@@ -28,3 +28,18 @@ def predict_loan_risk(payload: LoanRiskRequest, user=Depends(get_current_user)):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Inference error: {str(e)}")
+
+from fastapi import UploadFile, File
+
+@router.post("/parse-document")
+async def parse_document(file: UploadFile = File(...), user=Depends(get_current_user)):
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported.")
+    
+    try:
+        content = await file.read()
+        from .document_parser import parse_financial_document
+        parsed_data = parse_financial_document(content)
+        return {"status": "success", "data": parsed_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

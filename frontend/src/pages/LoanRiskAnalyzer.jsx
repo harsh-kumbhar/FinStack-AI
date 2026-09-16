@@ -23,6 +23,9 @@ export default function LoanRiskAnalyzer() {
     const { logout } = useAuth();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [inputMode, setInputMode] = useState('manual');
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState(null);
 
     const [formData, setFormData] = useState({
         EmploymentStatus: 'Employed',
@@ -72,6 +75,39 @@ export default function LoanRiskAnalyzer() {
         }
     };
 
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploading(true);
+        setUploadError(null);
+
+        try {
+            const result = await loanRiskService.parseDocument(file);
+            const parsed = result.data;
+            
+            setFormData(prev => ({
+                ...prev,
+                AnnualIncome: parsed.AnnualIncome !== null ? parsed.AnnualIncome : prev.AnnualIncome,
+                SavingsAccountBalance: parsed.SavingsAccountBalance !== null ? parsed.SavingsAccountBalance : prev.SavingsAccountBalance,
+                LoanAmount: parsed.LoanAmount !== null ? parsed.LoanAmount : prev.LoanAmount,
+                MonthlyDebtPayments: parsed.MonthlyDebtPayments !== null ? parsed.MonthlyDebtPayments : prev.MonthlyDebtPayments,
+                CreditScore: parsed.CreditScore !== null ? parsed.CreditScore : prev.CreditScore,
+                BaseInterestRate: parsed.BaseInterestRate !== null ? parsed.BaseInterestRate : prev.BaseInterestRate,
+                LoanDuration: parsed.LoanDuration !== null ? parsed.LoanDuration : prev.LoanDuration
+            }));
+            
+            setInputMode('manual'); // Switch back to manual tab so they can see the filled form
+            alert('Success! Extracted values from the document. Please verify them before submitting.');
+        } catch (err) {
+            console.error(err);
+            setUploadError(err.response?.data?.detail || err.message || 'Failed to parse document');
+        } finally {
+            setUploading(false);
+            e.target.value = null; // reset input
+        }
+    };
+
     return (
         <div style={styles.layout}>
             <aside style={styles.sidebar}>
@@ -113,13 +149,62 @@ export default function LoanRiskAnalyzer() {
                             </p>
                         </div>
 
+                        {/* TABS */}
+                        <div style={styles.tabsContainer}>
+                            <div 
+                                style={{ ...styles.tab, ...(inputMode === 'manual' ? styles.activeTab : {}) }}
+                                onClick={() => setInputMode('manual')}
+                            >
+                                ✍️ Manual Entry
+                            </div>
+                            <div 
+                                style={{ ...styles.tab, ...(inputMode === 'upload' ? styles.activeTab : {}) }}
+                                onClick={() => setInputMode('upload')}
+                            >
+                                📄 Auto-Fill via Document (PDF)
+                            </div>
+                        </div>
+
                         {error && (
                             <div style={styles.errorAlert}>
                                 <strong>Error:</strong> {error}
                             </div>
                         )}
+                        
+                        {uploadError && (
+                            <div style={styles.errorAlert}>
+                                <strong>Upload Error:</strong> {uploadError}
+                            </div>
+                        )}
 
-                        <form onSubmit={handleSubmit} style={styles.form}>
+                        {inputMode === 'upload' && (
+                            <div style={styles.uploadZone}>
+                                <div style={styles.uploadIcon}>📄</div>
+                                <h3 style={styles.uploadTitle}>Upload Financial Document</h3>
+                                <p style={styles.uploadSubtitle}>Upload a W-2, pay stub, or bank statement (PDF). Our AI will automatically extract your income, savings, and debt to fill out the form.</p>
+                                
+                                <input 
+                                    type="file" 
+                                    accept=".pdf" 
+                                    onChange={handleFileUpload}
+                                    style={{ display: 'none' }}
+                                    id="pdf-upload"
+                                />
+                                <label 
+                                    htmlFor="pdf-upload" 
+                                    style={{
+                                        ...styles.uploadBtn,
+                                        opacity: uploading ? 0.7 : 1,
+                                        cursor: uploading ? 'not-allowed' : 'pointer'
+                                    }}
+                                >
+                                    {uploading ? '🤖 AI is extracting data...' : 'Select PDF File'}
+                                </label>
+                            </div>
+                        )}
+
+                        {inputMode === 'manual' && (
+                            <form onSubmit={handleSubmit} style={styles.form}>
                             <div style={styles.grid2}>
                                 <div style={styles.inputGroup}>
                                     <label style={styles.label}>Employment Status</label>
@@ -187,6 +272,7 @@ export default function LoanRiskAnalyzer() {
                                 {loading ? 'Processing via AI...' : 'Submit for Approval'}
                             </button>
                         </form>
+                        )}
                     </div>
                 </div>
             </main>
@@ -372,5 +458,65 @@ const styles = {
         marginBottom: '24px',
         fontSize: '14px',
         borderLeft: '4px solid var(--error)'
+    },
+    tabsContainer: {
+        display: 'flex',
+        gap: '12px',
+        marginBottom: '32px',
+        borderBottom: '2px solid var(--border)',
+        paddingBottom: '12px'
+    },
+    tab: {
+        padding: '10px 20px',
+        fontSize: '14px',
+        fontWeight: '600',
+        color: 'var(--text2)',
+        cursor: 'pointer',
+        borderRadius: 'var(--radius-sm)',
+        transition: 'var(--transition)'
+    },
+    activeTab: {
+        backgroundColor: 'var(--navy)',
+        color: 'var(--white)',
+    },
+    uploadZone: {
+        border: '2px dashed var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '60px 40px',
+        textAlign: 'center',
+        backgroundColor: 'var(--bg)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '20px'
+    },
+    uploadIcon: {
+        fontSize: '48px',
+        marginBottom: '16px'
+    },
+    uploadTitle: {
+        fontSize: '20px',
+        color: 'var(--navy)',
+        fontWeight: 'bold',
+        margin: '0 0 12px 0'
+    },
+    uploadSubtitle: {
+        fontSize: '14px',
+        color: 'var(--text2)',
+        margin: '0 0 32px 0',
+        maxWidth: '500px',
+        lineHeight: '1.5'
+    },
+    uploadBtn: {
+        padding: '14px 28px',
+        backgroundColor: 'var(--white)',
+        color: 'var(--navy)',
+        border: '2px solid var(--navy)',
+        borderRadius: 'var(--radius-sm)',
+        fontSize: '15px',
+        fontWeight: 'bold',
+        transition: 'var(--transition)',
+        display: 'inline-block'
     }
 };
