@@ -210,15 +210,12 @@ const styles = {
 
 const SIDEBAR_ITEMS = [
     { label: 'Dashboard', active: true, path: '/dashboard' },
+    { label: 'Document Vault', path: '/document-vault' },
     { label: 'Financial Health Analyzer', path: '/health-analyzer' },
     { label: 'SmartFeed', path: '/smartfeed' },
-    { label: 'Document Intelligence', soon: true },
-    { label: 'Loan Risk Assessment', soon: true },
-    { label: 'Tax Estimator', path: '/tax-estimator' },
+    { label: 'Financial Journey', path: '/financial-journey' },
     { label: 'Loan Risk Assessment', path: '/loan-analyzer' },
-    { label: 'Tax Estimator', soon: true },
-    { label: 'Investment Advisor', soon: true },
-    { label: 'Settings', soon: true }
+    { label: 'Tax Estimator', path: '/tax-estimator' }
 ];
 
 export default function Dashboard() {
@@ -510,8 +507,7 @@ export default function Dashboard() {
                                         <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/loan-analyzer')}>Open</button>
                                     </div>
                                 </div>
-
-                                <div style={styles.moduleCard}>
+                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
                                     <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>Tax Estimator</div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
                                         <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
@@ -519,34 +515,8 @@ export default function Dashboard() {
                                     </div>
                                 </div>
 
-                                {[
-                                    'Document Intelligence',
-                                    'Loan Risk Assessment',
-                                    'Tax Estimator',
-                                    'Investment Advisor'
-                                ].map((mod, i) => (
-                                    <div
-                                        key={i}
-                                        style={{ ...styles.moduleCard, ...styles.moduleSoon }}
-                                        onClick={() => handleFeatureClick('soon')}
-                                    >
-                                        <div style={{ fontWeight: 'bold', color: 'var(--text2)' }}>
-                                            {mod}
-                                        </div>
 
-                                        <div style={{ marginTop: '16px' }}>
-                                            <span style={{
-                                                fontSize: '12px',
-                                                color: 'var(--warning)',
-                                                backgroundColor: 'var(--warning-light)',
-                                                padding: '4px 8px',
-                                                borderRadius: '4px'
-                                            }}>
-                                                Coming Soon
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
+                             
 
                             </div>
                         </div>

@@ -8,14 +8,14 @@ import '../styles/smartfeed.css';
 
 const SIDEBAR_ITEMS = [
     { label: 'Dashboard', path: '/dashboard' },
+    { label: 'Document Vault', path: '/document-vault' },
     { label: 'Financial Health Analyzer', path: '/health-analyzer' },
-    { label: 'SmartFeed', path: '/smartfeed', active: true },
-    { label: 'Document Intelligence', soon: true },
-    { label: 'Loan Risk Assessment', soon: true },
-    { label: 'Tax Estimator', path: '/tax-estimator' },
-    { label: 'Investment Advisor', soon: true },
-    { label: 'Settings', soon: true },
+    { label: 'SmartFeed', active: true, path: '/smartfeed' },
+    { label: 'Financial Journey', path: '/financial-journey' },
+    { label: 'Loan Risk Assessment', path: '/loan-analyzer' },
+    { label: 'Tax Estimator', path: '/tax-estimator' }
 ];
+
 
 const styles = {
     layout: {

@@ -38,12 +38,15 @@ const styles = {
     btnPrimary: { padding: '12px 24px', backgroundColor: 'var(--saffron)', color: 'var(--white)', border: 'none', borderRadius: 'var(--radius-sm)', fontWeight: 'bold', cursor: 'pointer', display: 'inline-block', marginTop: '16px' }
 };
 
+
 const SIDEBAR_ITEMS = [
     { label: 'Dashboard', path: '/dashboard' },
+    { label: 'Document Vault', path: '/document-vault' },
     { label: 'Financial Health Analyzer', path: '/health-analyzer' },
-    { label: 'Financial Journey', path: '/financial-journey', active: true },
     { label: 'SmartFeed', path: '/smartfeed' },
-    { label: 'Settings', soon: true }
+    { label: 'Financial Journey', active: true, path: '/financial-journey' },
+    { label: 'Loan Risk Assessment', path: '/loan-analyzer' },
+    { label: 'Tax Estimator', path: '/tax-estimator' }
 ];
 
 export default function FinancialJourney() {

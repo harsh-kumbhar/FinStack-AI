@@ -107,13 +107,12 @@ const layoutStyles = {
 
 const SIDEBAR_ITEMS = [
     { label: 'Dashboard', path: '/dashboard' },
+    { label: 'Document Vault', active: true, path: '/document-vault' },
     { label: 'Financial Health Analyzer', path: '/health-analyzer' },
     { label: 'SmartFeed', path: '/smartfeed' },
-    { label: 'Document Vault', active: true, path: '/document-vault' },
-    { label: 'Loan Risk Assessment', soon: true },
-    { label: 'Tax Estimator', soon: true },
-    { label: 'Investment Advisor', soon: true },
-    { label: 'Settings', soon: true }
+    { label: 'Financial Journey', path: '/financial-journey' },
+    { label: 'Loan Risk Assessment', path: '/loan-analyzer' },
+    { label: 'Tax Estimator', path: '/tax-estimator' }
 ];
 
 const DOCUMENT_TYPES = [

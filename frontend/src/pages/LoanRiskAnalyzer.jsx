@@ -7,16 +7,17 @@ const EMPLOYMENT_OPTIONS = ['Employed', 'Self-Employed', 'Unemployed'];
 const EDUCATION_OPTIONS = ['High School', 'Bachelor', 'Master', 'Doctorate'];
 const LOAN_DURATION_OPTIONS = [12, 24, 36, 60, 84];
 
+
 const SIDEBAR_ITEMS = [
     { label: 'Dashboard', path: '/dashboard' },
+    { label: 'Document Vault', path: '/document-vault' },
     { label: 'Financial Health Analyzer', path: '/health-analyzer' },
     { label: 'SmartFeed', path: '/smartfeed' },
-    { label: 'Document Intelligence', soon: true },
-    { label: 'Loan Risk Assessment', path: '/loan-analyzer', active: true, badge: 'BETA' },
-    { label: 'Tax Estimator', soon: true },
-    { label: 'Investment Advisor', soon: true },
-    { label: 'Settings', soon: true }
+    { label: 'Financial Journey', path: '/financial-journey' },
+    { label: 'Loan Risk Assessment', active: true, path: '/loan-analyzer' },
+    { label: 'Tax Estimator', path: '/tax-estimator' }
 ];
+
 
 export default function LoanRiskAnalyzer() {
     const navigate = useNavigate();

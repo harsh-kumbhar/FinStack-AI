@@ -1,19 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, act } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { taxEstimatorService } from '../services/taxEstimatorService';
 import '../styles/taxEstimator.css';
 
-// Project sidebar navigation items matching Dashboard.jsx
 const SIDEBAR_ITEMS = [
     { label: 'Dashboard', path: '/dashboard' },
+    { label: 'Document Vault', path: '/document-vault' },
     { label: 'Financial Health Analyzer', path: '/health-analyzer' },
     { label: 'SmartFeed', path: '/smartfeed' },
-    { label: 'Document Intelligence', soon: true },
-    { label: 'Loan Risk Assessment', soon: true },
-    { label: 'Tax Estimator', path: '/tax-estimator', active: true },
-    { label: 'Investment Advisor', soon: true },
-    { label: 'Settings', soon: true },
+    { label: 'Financial Journey', path: '/financial-journey' },
+    { label: 'Loan Risk Assessment', path: '/loan-analyzer' },
+    { label: 'Tax Estimator', active: true, path: '/tax-estimator' }
 ];
 
 export default function TaxEstimator() {
