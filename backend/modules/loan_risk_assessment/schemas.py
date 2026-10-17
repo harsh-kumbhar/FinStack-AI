@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Dict, Any, Optional , List
 
 class LoanRiskRequest(BaseModel):
     """
@@ -26,3 +27,33 @@ class LoanRiskResponse(BaseModel):
     debt_to_income_ratio: float = Field(..., description="Calculated DTI ratio")
     monthly_payment_estimate: float = Field(..., description="Estimated monthly loan payment")
     status: str
+
+class FieldProvenance(BaseModel):
+    source: str = Field(..., description="DOCUMENT_EXTRACTED, FINSTACK_PROFILE, or DEFAULT")
+    raw_value: Any = None
+    confidence: float = 1.0
+    notes: Optional[str] = None
+
+class LoanProfileDefaultsResponse(BaseModel):
+    EmploymentStatus: str
+    EducationLevel: str
+    AnnualIncome: float
+    SavingsAccountBalance: float
+    CreditScore: float
+    MonthlyDebtPayments: float
+    has_profile_data: bool
+    field_sources: Dict[str, FieldProvenance]
+
+class LoanMarketOffer(BaseModel):
+    id: str
+    bank_name: str
+    loan_type: str
+    interest_rate: float
+    max_duration_months: int
+    min_credit_score: int
+    description: str
+    logo_color: str  # Hex color for frontend styling
+
+class LoanMarketplaceResponse(BaseModel):
+    offers: List[LoanMarketOffer]
+    last_updated: str

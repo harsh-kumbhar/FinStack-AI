@@ -21,7 +21,7 @@ Critical semantic rules:
 """
 
 from enum import Enum
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Union, List
 from decimal import Decimal
 from datetime import date, datetime
 from pydantic import BaseModel, Field, field_validator
@@ -134,136 +134,98 @@ class TaxInputNormalizer:
         cls,
         user_profile: Optional[Dict[str, Any]] = None,
         financial_profile: Optional[Dict[str, Any]] = None,
+        vault_records: Optional[List[Dict[str, Any]]] = None,
         financial_year: str = "2024-25"
     ) -> NormalizedTaxInput:
         """
-        Extracts candidate fields from user_profile and financial_profile.
-        Adheres strictly to semantic verification:
-        - Annualizes monthly_income to estimate annual gross salary.
-        - Avoids semantic corruption: does NOT map cumulative portfolio investments to 80C.
-        - Avoids semantic corruption: does NOT map life sum assured to 80D.
-        - Computes age from date_of_birth.
+        Extracts candidate fields from user profiles AND confirmed Document Vault records.
+        Prioritizes Document Vault data over basic profile estimates.
         """
         user_profile = user_profile or {}
         financial_profile = financial_profile or {}
+        vault_records = vault_records or []
 
         field_sources: Dict[str, FieldProvenance] = {}
-        has_any_data = bool(user_profile or financial_profile)
+        
+        # Base defaults
+        age = 30
+        gross_salary = 0.0
+        other_income = 0.0
+        deduction_80c = 0.0
+        deduction_80d = 0.0
+        deduction_80tta = 0.0
 
-        # 1. Financial Year
         field_sources["financial_year"] = FieldProvenance(
-            source=TaxInputSource.DEFAULT,
-            raw_value=financial_year,
-            confidence=1.0,
-            notes="Default supported financial year"
+            source=TaxInputSource.DEFAULT, raw_value=financial_year, confidence=1.0, notes="Default FY"
         )
 
-        # 2. Age / Date of Birth
+        # 1. Age (From User Profile)
         dob = user_profile.get("date_of_birth")
         calculated_age = cls.calculate_age_from_dob(dob)
         if calculated_age is not None:
             age = calculated_age
             field_sources["age"] = FieldProvenance(
-                source=TaxInputSource.FINSTACK_PROFILE,
-                raw_value=str(dob),
-                confidence=1.0,
-                notes=f"Calculated from date of birth ({dob}) in user profile"
+                source=TaxInputSource.FINSTACK_PROFILE, raw_value=str(dob), confidence=1.0, notes=f"Calculated from DOB"
             )
         else:
-            age = 30
             field_sources["age"] = FieldProvenance(
-                source=TaxInputSource.DEFAULT,
-                raw_value=None,
-                confidence=1.0,
-                notes="Default age 30 (no date of birth found in profile)"
+                source=TaxInputSource.DEFAULT, raw_value=None, confidence=1.0, notes="Default age 30"
             )
 
-        # 3. Gross Salary (Monthly Income -> Annualized)
-        raw_monthly_income = financial_profile.get("monthly_income")
-        if raw_monthly_income is not None and float(raw_monthly_income) > 0:
-            monthly_val = float(raw_monthly_income)
-            gross_salary = round(monthly_val * 12.0, 2)
+        # 2. Parse Document Vault Records (High Priority)
+        for record in vault_records:
+            r_type = record.get("record_type")
+            data = record.get("record_data", {})
+
+            if r_type == "salary_slip" and data.get("gross_salary"):
+                gross_salary = float(data["gross_salary"]) * 12 # Assuming monthly slip for prototype
+                field_sources["gross_salary"] = FieldProvenance(
+                    source=TaxInputSource.DOCUMENT_EXTRACTED, raw_value=gross_salary, confidence=0.95, 
+                    notes="Annualized from verified Salary Slip in Document Vault"
+                )
+            
+            elif r_type == "itr":
+                if data.get("gross_total_income"):
+                    gross_salary = float(data["gross_total_income"])
+                    field_sources["gross_salary"] = FieldProvenance(
+                        source=TaxInputSource.DOCUMENT_EXTRACTED, raw_value=gross_salary, confidence=0.99, 
+                        notes="Extracted directly from verified ITR Document"
+                    )
+
+            elif r_type == "investment" and data.get("total_amount"):
+                deduction_80c = min(150000.0, float(data["total_amount"]))
+                field_sources["deduction_80c"] = FieldProvenance(
+                    source=TaxInputSource.DOCUMENT_EXTRACTED, raw_value=deduction_80c, confidence=0.90, 
+                    notes="Sourced from verified Investment Proofs"
+                )
+                
+            elif r_type == "insurance" and data.get("premium"):
+                deduction_80d = min(25000.0, float(data["premium"]))
+                field_sources["deduction_80d"] = FieldProvenance(
+                    source=TaxInputSource.DOCUMENT_EXTRACTED, raw_value=deduction_80d, confidence=0.95, 
+                    notes="Sourced from verified Insurance Premium Receipt"
+                )
+
+        # 3. Fallback to Financial Profile (Low Priority) if Vault didn't have data
+        if "gross_salary" not in field_sources and financial_profile.get("monthly_income"):
+            gross_salary = float(financial_profile["monthly_income"]) * 12.0
             field_sources["gross_salary"] = FieldProvenance(
-                source=TaxInputSource.FINSTACK_PROFILE,
-                raw_value=monthly_val,
-                confidence=0.80,
-                notes=(
-                    f"Annualized estimate (₹{monthly_val:,.2f}/month × 12) from FinStack financial profile. "
-                    "Verify against your Form 16 / salary slip."
-                )
+                source=TaxInputSource.FINSTACK_PROFILE, raw_value=gross_salary, confidence=0.80, 
+                notes="Estimated from basic FinStack profile monthly income."
             )
-        else:
-            gross_salary = 0.0
-            field_sources["gross_salary"] = FieldProvenance(
-                source=TaxInputSource.DEFAULT,
-                raw_value=None,
-                confidence=1.0,
-                notes="Default 0.0 (no monthly income recorded in profile)"
+        elif "gross_salary" not in field_sources:
+             field_sources["gross_salary"] = FieldProvenance(
+                source=TaxInputSource.DEFAULT, raw_value=None, confidence=1.0, notes="No salary data found."
             )
 
-        # 4. Other Income
-        field_sources["other_income"] = FieldProvenance(
-            source=TaxInputSource.DEFAULT,
-            raw_value=0.0,
-            confidence=1.0,
-            notes="Default 0.0. Enter interest or other non-salary taxable income if applicable."
-        )
-        other_income = 0.0
-
-        # 5. Section 80C Deductions (Semantic check: portfolio vs annual contribution)
-        raw_investments = financial_profile.get("investments")
-        if raw_investments is not None and float(raw_investments) > 0:
-            inv_val = float(raw_investments)
-            # Semantic separation: do NOT blindly set deduction_80c = inv_val
-            field_sources["deduction_80c"] = FieldProvenance(
-                source=TaxInputSource.DEFAULT,
-                raw_value=inv_val,
-                confidence=0.50,
-                notes=(
-                    f"Profile records ₹{inv_val:,.2f} total portfolio investments, but Section 80C requires "
-                    "eligible contributions made during this financial year (capped at ₹1,50,000). Please enter FY contributions."
-                )
-            )
-        else:
-            field_sources["deduction_80c"] = FieldProvenance(
-                source=TaxInputSource.DEFAULT,
-                raw_value=None,
-                confidence=1.0,
-                notes="Default 0.0. Enter eligible Section 80C contributions (PPF, ELSS, EPF, etc.)."
-            )
-        deduction_80c = 0.0
-
-        # 6. Section 80D Deductions (Semantic check: life cover vs health premium)
-        raw_insurance = financial_profile.get("insurance_cover")
-        if raw_insurance is not None and float(raw_insurance) > 0:
-            ins_val = float(raw_insurance)
-            # Semantic separation: sum assured is NOT health premium
-            field_sources["deduction_80d"] = FieldProvenance(
-                source=TaxInputSource.DEFAULT,
-                raw_value=ins_val,
-                confidence=0.50,
-                notes=(
-                    f"Profile records ₹{ins_val:,.2f} life/term insurance cover (sum assured). Section 80D requires "
-                    "health insurance premium paid (capped at ₹25,000 for non-seniors). Please enter annual health premium."
-                )
-            )
-        else:
-            field_sources["deduction_80d"] = FieldProvenance(
-                source=TaxInputSource.DEFAULT,
-                raw_value=None,
-                confidence=1.0,
-                notes="Default 0.0. Enter medical insurance premium paid."
-            )
-        deduction_80d = 0.0
-
-        # 7. Section 80TTA Deductions
-        field_sources["deduction_80tta"] = FieldProvenance(
-            source=TaxInputSource.DEFAULT,
-            raw_value=None,
-            confidence=1.0,
-            notes="Default 0.0. Enter savings account interest deduction (capped at ₹10,000)."
-        )
-        deduction_80tta = 0.0
+        if "deduction_80c" not in field_sources:
+             field_sources["deduction_80c"] = FieldProvenance(source=TaxInputSource.DEFAULT, raw_value=None, confidence=1.0, notes="No 80C data found.")
+        
+        if "deduction_80d" not in field_sources:
+             field_sources["deduction_80d"] = FieldProvenance(source=TaxInputSource.DEFAULT, raw_value=None, confidence=1.0, notes="No 80D data found.")
+             
+        field_sources["other_income"] = FieldProvenance(source=TaxInputSource.DEFAULT, raw_value=0.0, confidence=1.0, notes="No other income found.")
+        field_sources["deduction_80tta"] = FieldProvenance(source=TaxInputSource.DEFAULT, raw_value=0.0, confidence=1.0, notes="No 80TTA data found.")
 
         return NormalizedTaxInput(
             financial_year=financial_year,

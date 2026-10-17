@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from .schemas import LoanRiskRequest, LoanRiskResponse
+from .schemas import LoanRiskRequest, LoanRiskResponse, LoanProfileDefaultsResponse ,LoanMarketplaceResponse
 from .service import loan_risk_service
 from common.database import get_current_user, supabase
 
@@ -28,3 +28,22 @@ def predict_loan_risk(payload: LoanRiskRequest, user=Depends(get_current_user)):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Inference error: {str(e)}")
+
+@router.get("/profile-defaults", response_model=LoanProfileDefaultsResponse)
+def get_loan_profile_defaults(user=Depends(get_current_user)):
+    """
+    Extract profile-derived defaults and Document Vault values for Loan Risk Analysis.
+    """
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthenticated")
+    return loan_risk_service.get_profile_defaults(user.id)
+from .schemas import LoanMarketplaceResponse
+
+@router.get("/market-offers", response_model=LoanMarketplaceResponse)
+def get_loan_market_offers(user=Depends(get_current_user)):
+    """
+    Fetch live loan products from the marketplace aggregator.
+    """
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthenticated")
+    return loan_risk_service.get_market_offers()

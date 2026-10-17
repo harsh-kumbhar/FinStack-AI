@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { supabase } from '../services/supabase'; // Adjust path to your Supabase client
+import { supabase } from '../services/supabase';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const DOCS_API_URL = `${API_BASE_URL}/documents`;
@@ -12,7 +12,7 @@ const getAuthHeaders = async () => {
 };
 
 export const documentVaultService = {
-    // Upload a document (multipart/form-data)
+    // Upload a document
     uploadDocument: async (file, documentType) => {
         const headers = await getAuthHeaders();
         const formData = new FormData();
@@ -32,7 +32,7 @@ export const documentVaultService = {
     listDocuments: async (page = 1, pageSize = 20) => {
         const headers = await getAuthHeaders();
         const response = await axios.get(`${DOCS_API_URL}?page=${page}&page_size=${pageSize}`, { headers });
-        return response.data; // { documents: [...], total: int }
+        return response.data;
     },
 
     // Get document statistics
@@ -42,7 +42,7 @@ export const documentVaultService = {
         return response.data;
     },
 
-    // Search documents by filename
+    // Search documents
     searchDocuments: async (query) => {
         const headers = await getAuthHeaders();
         const response = await axios.get(`${DOCS_API_URL}/search?q=${encodeURIComponent(query)}`, { headers });
@@ -61,11 +61,11 @@ export const documentVaultService = {
         return response.data;
     },
 
-    // Get download URL (Original File)
+    // Get download URL
     getDownloadUrl: async (id) => {
         const headers = await getAuthHeaders();
         const response = await axios.get(`${DOCS_API_URL}/${id}/download`, { headers });
-        return response.data; // { download_url: "...", expires_in: 300 }
+        return response.data;
     },
 
     // Delete document
@@ -75,11 +75,24 @@ export const documentVaultService = {
         return response.data;
     },
 
-    // --- NEW: Fetch Extracted Data ---
-    // Fetches the structured JSON data extracted from the document
+    // Fetch Extracted Data
     getExtractedData: async (id) => {
         const headers = await getAuthHeaders();
         const response = await axios.get(`${DOCS_API_URL}/${id}/extraction`, { headers });
+        return response.data;
+    },
+
+    // --- NEW: Trigger AI Analysis ---
+    aiAnalyzeDocument: async (id) => {
+        const headers = await getAuthHeaders();
+        const response = await axios.post(`${DOCS_API_URL}/${id}/ai-analyze`, {}, { headers });
+        return response.data;
+    },
+
+    // --- NEW: Confirm Data ---
+    confirmDocumentData: async (id) => {
+        const headers = await getAuthHeaders();
+        const response = await axios.post(`${DOCS_API_URL}/${id}/confirm`, {}, { headers });
         return response.data;
     }
 };

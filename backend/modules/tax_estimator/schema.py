@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from decimal import Decimal
 from datetime import datetime
 
@@ -221,6 +221,25 @@ class TaxWhatIfResponse(BaseModel):
         "They do not alter your profile or saved tax records and do not constitute financial advice."
     )
 
+class InterviewMessage(BaseModel):
+    role: str
+    content: str
+
+class TaxInterviewRequest(BaseModel):
+    """
+    Payload sent from the frontend Chat UI.
+    Contains the conversation history and the live state of the 5 slots.
+    """
+    messages: List[InterviewMessage]
+    current_slots: Dict[str, Any] = Field(
+        default_factory=lambda: {
+            "gross_salary": None,
+            "other_income": None,
+            "deduction_80c": None,
+            "deduction_80d": None,
+            "home_loan_interest": None
+        }
+    )
 
 # =============================================================
 # API RESPONSE SCHEMA

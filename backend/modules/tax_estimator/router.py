@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from common.database import get_current_user
-
+from .schema import TaxInterviewRequest
+from .interview_service import TaxInterviewService, InterviewResponse
 from .schema import (
     TaxCalculateRequest,
     TaxCalculateResponse,
@@ -13,11 +14,8 @@ from .schema import (
     TaxAssessmentComparisonRequest,
     TaxAssessmentComparisonResponse,
     TaxJourneyMilestone,
-    DocumentStagedPayload,
-    DocumentReviewConfirmationRequest,
     ConfirmedDocumentTaxInputResponse,
 )
-from .document_boundary import DocumentBoundaryService
 from .service import TaxEstimatorService
 
 router = APIRouter(
@@ -44,6 +42,26 @@ def get_profile_defaults(financial_year: str = "2024-25", user=Depends(get_curre
         raise HTTPException(status_code=401, detail="Unauthenticated")
     return TaxEstimatorService.get_profile_defaults(user.id, financial_year)
 
+@router.post("/interview/chat", response_model=InterviewResponse)
+async def tax_interview_chat_endpoint(request: TaxInterviewRequest, user=Depends(get_current_user)):
+    """
+    State Machine Chatbot Endpoint.
+    Receives chat history and current slots, passes them to DeepSeek, 
+    and returns the assistant's reply along with updated slot extraction.
+    """
+    if not user:
+        raise HTTPException(status_code=401, detail="Unauthenticated")
+        
+    # Convert Pydantic message objects into plain dictionaries for the LLM
+    messages_list = [{"role": msg.role, "content": msg.content} for msg in request.messages]
+    
+    # Process through the AI Service
+    response = await TaxInterviewService.process_chat(
+        messages=messages_list,
+        current_slots=request.current_slots
+    )
+    
+    return response
 
 @router.post("/calculate", response_model=TaxCalculateResponse)
 def calculate_tax(request: TaxCalculateRequest, user=Depends(get_current_user)):
@@ -110,28 +128,4 @@ def get_journey_milestone(user=Depends(get_current_user)):
         raise HTTPException(status_code=401, detail="Unauthenticated")
     return TaxEstimatorService.get_journey_milestone(user.id)
 
-
-@router.post("/documents/stage", response_model=DocumentStagedPayload)
-def stage_document_payload(payload: DocumentStagedPayload, user=Depends(get_current_user)):
-    """
-    Ingest extracted data from Document Vault into provisional staging state.
-    Forces is_user_confirmed=False on all candidate fields.
-    """
-    if not user:
-        raise HTTPException(status_code=401, detail="Unauthenticated")
-    return DocumentBoundaryService.stage_document_extracted_data(payload)
-
-
-@router.post("/documents/confirm", response_model=ConfirmedDocumentTaxInputResponse)
-def confirm_document_review(request: DocumentReviewConfirmationRequest, user=Depends(get_current_user)):
-    """
-    Human-in-the-loop review confirmation endpoint.
-    User accepts, modifies, or rejects candidate fields extracted by Document Vault.
-    Converts confirmed fields into a trusted NormalizedTaxInput with full audit provenance.
-    """
-    if not user:
-        raise HTTPException(status_code=401, detail="Unauthenticated")
-    if not request.staged_payload:
-        raise HTTPException(status_code=422, detail="Missing staged_payload for document review confirmation")
-    return DocumentBoundaryService.confirm_document_extracted_data(user.id, request, request.staged_payload)
 

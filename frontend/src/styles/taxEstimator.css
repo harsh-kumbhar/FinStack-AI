@@ -2182,4 +2182,67 @@
     }
 }
 
+/* ── Tax Intelligence Hub & Floating Action Button ── */
+.te-floating-chat-btn {
+    position: fixed;
+    bottom: 40px;
+    right: 40px;
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: var(--white);
+    padding: 16px 28px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 800;
+    box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.4), 0 8px 10px -6px rgba(217, 119, 6, 0.2);
+    border: 2px solid #FCD34D;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 999;
+}
 
+    .te-floating-chat-btn:hover {
+        transform: translateY(-4px) scale(1.02);
+        box-shadow: 0 20px 25px -5px rgba(217, 119, 6, 0.5), 0 8px 10px -6px rgba(217, 119, 6, 0.3);
+    }
+
+    .te-floating-chat-btn .chat-icon {
+        font-size: 22px;
+    }
+
+.te-info-card-expanded {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-sm);
+    line-height: 1.6;
+}
+
+    .te-info-card-expanded h3 {
+        color: var(--navy);
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 8px;
+    }
+
+    .te-info-card-expanded p {
+        color: var(--text2);
+        font-size: 15px;
+        margin-bottom: 16px;
+    }
+
+    .te-info-card-expanded ul {
+        color: var(--text2);
+        font-size: 14.5px;
+        padding-left: 20px;
+    }
+
+    .te-info-card-expanded li {
+        margin-bottom: 8px;
+    }

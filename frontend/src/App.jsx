@@ -13,6 +13,7 @@ import LoanRiskAnalyzer from "./pages/LoanRiskAnalyzer";
 import LoanRiskResult from "./pages/LoanRiskResult";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DocumentVault from "./pages/DocumentVault";
+import TaxInterview from './pages/TaxInterview'; // Adjust path if necessary
 function App() {
     return (
         <Routes>
@@ -103,6 +104,8 @@ function App() {
                     </ProtectedRoute>
                 }
             />
+            <Route path="/tax-estimator" element={<TaxEstimator />} />
+            <Route path="/tax-estimator/interview" element={<TaxInterview />} />
 
             <Route path="*" element={<NotFound />} />
         </Routes>

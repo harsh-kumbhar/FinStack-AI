@@ -8,6 +8,8 @@ from fastapi import (
     status,
     Query,
 )
+import json
+from modules.document_vault.ai_extraction_service import extract_financial_data_with_ai
 from typing import Optional
 
 from modules.document_vault.classification_service import (
@@ -425,81 +427,6 @@ async def extract_document_text_endpoint(
         )
 
 # =========================================================
-# DELETE DOCUMENT
-# =========================================================
-
-@router.delete(
-    "/{document_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-async def delete_document_endpoint(
-    document_id: str,
-    user=Depends(get_current_user),
-):
-    """
-    Delete a document after verifying ownership.
-    """
-
-    try:
-        delete_document(
-            user_id=user.id,
-            document_id=document_id,
-        )
-
-        return None
-
-    except UserProfileNotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        )
-
-    except DocumentNotFoundError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(exc),
-        )
-
-    except RuntimeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(exc),
-        )
-
-@router.post("/documents/{document_id}/extract")
-async def extract_document_text_endpoint(
-    document_id: str,
-    user=Depends(get_current_user),
-):
-    """
-    Extract text from a user's PDF document.
-    """
-
-    try:
-        return extract_document_text(
-            user_id=user.id,
-            document_id=document_id,
-        )
-
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(exc),
-        )
-
-    except RuntimeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(exc),
-        )
-
-    except Exception as exc:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to extract document text: {str(exc)}",
-        )
-
-# =========================================================
 # CLASSIFY DOCUMENT
 # =========================================================
 
@@ -586,6 +513,249 @@ async def classify_document_endpoint(
             detail=f"Failed to classify document: {str(exc)}",
         )
 
+
+# =========================================================
+# AI ANALYZE EXTRACTION
+# =========================================================
+
+@router.post(
+    "/{document_id}/ai-analyze",
+)
+async def ai_analyze_document_endpoint(
+    document_id: str,
+    user=Depends(get_current_user),
+):
+    """
+    Trigger the AI to analyze the extracted raw text and save the structured JSON.
+    """
+    try:
+        document = get_document(
+            user_id=user.id,
+            document_id=document_id,
+        )
+
+        extracted_response = (
+            supabase
+            .table("document_extracted_data")
+            .select("raw_text")
+            .eq("document_id", document_id)
+            .maybe_single()
+            .execute()
+        )
+
+        if not extracted_response or not extracted_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Raw text not found. Ensure the document was processed first.",
+            )
+
+        raw_text = extracted_response.data.get("raw_text")
+        document_type = document.get("document_type")
+        
+        if not raw_text:
+             raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Document does not contain readable text for AI analysis.",
+            )
+
+        # 1. Call the AI
+        structured_json_string = extract_financial_data_with_ai(raw_text, document_type)
+        
+        # Parse it safely
+        extracted_data = json.loads(structured_json_string)
+
+        # 2. Save it back to the database and mark status as 'completed'
+        (
+            supabase
+            .table("document_extracted_data")
+            .update({
+                "extracted_data": extracted_data,
+                "extraction_status": "completed",
+                # Corrected: database expects a value between 0.0 and 1.0
+                "confidence_score": 0.95, 
+            })
+            .eq("document_id", document_id)
+            .execute()
+        )
+        # 3. ADD THIS: Update the main document table so the UI turns green
+        (
+            supabase
+            .table("uploaded_document")
+            .update({"processing_status": "completed"})
+            .eq("id", document_id)
+            .execute()
+        )
+
+        return {
+            "message": "AI Analysis complete",
+            "document_id": document_id,
+            "data": extracted_data
+        }
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to run AI Analysis: {str(exc)}",
+        )
+
+
+# =========================================================
+# GET DOCUMENT EXTRACTION DATA
+# IMPORTANT: Must come before /{document_id}
+# =========================================================
+
+@router.get(
+    "/{document_id}/extraction",
+)
+async def get_document_extraction_endpoint(
+    document_id: str,
+    user=Depends(get_current_user),
+):
+    """
+    Fetch the AI extracted structured data, confidence, and status for a document.
+    """
+    try:
+        # Verify ownership first
+        document = get_document(
+            user_id=user.id,
+            document_id=document_id,
+        )
+
+        extraction_response = (
+            supabase
+            .table("document_extracted_data")
+            .select("*")
+            .eq("document_id", document_id)
+            .maybe_single()
+            .execute()
+        )
+
+        if not extraction_response or not extraction_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Extraction data not found for this document.",
+            )
+
+        row = extraction_response.data
+
+        return {
+            "document_id": document_id,
+            "extracted_data": row.get("extracted_data") or {},
+            "confidence_score": float(row.get("confidence_score") or 0.0),
+            "extraction_status": row.get("extraction_status"),
+            "extraction_error": row.get("extraction_error"),
+            "normalized_data": row.get("normalized_data"),
+            "normalization_status": row.get("normalization_status"),
+        }
+
+    except HTTPException:
+        raise
+    except UserProfileNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        )
+    except DocumentNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch extraction data: {str(exc)}",
+        )
+
+
+# =========================================================
+# CONFIRM & SAVE TO USER FINANCIAL RECORDS
+# =========================================================
+
+@router.post(
+    "/{document_id}/confirm",
+)
+async def confirm_document_data_endpoint(
+    document_id: str,
+    user=Depends(get_current_user),
+):
+    """
+    Confirm the AI-extracted data and save it as a verified financial record 
+    for downstream modules to autofill forms.
+    """
+    try:
+        # 1. Get the document and user profile ID
+        document = get_document(user_id=user.id, document_id=document_id)
+        user_profile_id = document["user_profile_id"]
+        document_type = document["document_type"]
+
+        # 2. Get the AI extracted data
+        extraction_response = (
+            supabase
+            .table("document_extracted_data")
+            .select("extracted_data")
+            .eq("document_id", document_id)
+            .single()
+            .execute()
+        )
+        
+        extracted_data = extraction_response.data.get("extracted_data")
+        if not extracted_data:
+            raise ValueError("No extracted data found to confirm.")
+
+        # 3. Check if a record already exists for this document to prevent duplicates
+        existing_record = (
+            supabase
+            .table("user_financial_records")
+            .select("id")
+            .eq("document_id", document_id)
+            .maybe_single()
+            .execute()
+        )
+
+        if existing_record and existing_record.data:
+            # Update existing record if the user re-analyzes and re-confirms
+            (
+                supabase
+                .table("user_financial_records")
+                .update({
+                    "record_data": extracted_data,
+                    "updated_at": "now()"
+                })
+                .eq("document_id", document_id)
+                .execute()
+            )
+        else:
+            # Insert new record
+            (
+                supabase
+                .table("user_financial_records")
+                .insert({
+                    "user_profile_id": user_profile_id,
+                    "document_id": document_id,
+                    "record_type": document_type,
+                    "record_data": extracted_data
+                })
+                .execute()
+            )
+
+        # 4. Mark the document's extraction status as officially confirmed
+        (
+            supabase
+            .table("document_extracted_data")
+            .update({"normalization_status": "confirmed"})
+            .eq("document_id", document_id)
+            .execute()
+        )
+
+        return {"message": "Data confirmed and stored securely for module autofill."}
+
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save financial record: {str(exc)}",
+        )
+
+
 # =========================================================
 # GET DOCUMENT
 # IMPORTANT: Dynamic route LAST
@@ -627,3 +797,44 @@ async def get_document_endpoint(
             detail=f"Failed to retrieve document: {str(exc)}",
         )
 
+# =========================================================
+# DELETE DOCUMENT
+# =========================================================
+
+@router.delete(
+    "/{document_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+async def delete_document_endpoint(
+    document_id: str,
+    user=Depends(get_current_user),
+):
+    """
+    Delete a document after verifying ownership.
+    """
+
+    try:
+        delete_document(
+            user_id=user.id,
+            document_id=document_id,
+        )
+
+        return None
+
+    except UserProfileNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        )
+
+    except DocumentNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(exc),
+        )
+
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        )

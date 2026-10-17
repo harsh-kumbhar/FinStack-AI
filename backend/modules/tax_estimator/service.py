@@ -1018,39 +1018,68 @@ class TaxEstimatorService:
                 notes="Could not retrieve tax milestone status.",
             )
 
+  
     @staticmethod
     def get_profile_defaults(user_id: str, financial_year: str = "2024-25") -> ProfileDefaultsResponse:
         """
         Extract profile-derived tax input defaults for the authenticated user.
-        Independent and non-blocking: if profile tables are missing or empty,
-        returns safe default values without raising errors.
+        Queries user_profile, financial_profile, and verified records from user_financial_records (Document Vault).
         """
         user_profile_data = None
         financial_profile_data = None
+        vault_records_data = []
         has_profile = False
 
         try:
-            # 1. Fetch user_profile for date of birth / age
-            u_res = supabase.table("user_profile").select("id, date_of_birth, full_name").eq("user_id", user_id).execute()
+            # 1. Fetch user_profile for date of birth, name, and profile primary key
+            u_res = (
+                supabase
+                .table("user_profile")
+                .select("id, date_of_birth, full_name")
+                .eq("user_id", user_id)
+                .execute()
+            )
+            
             if u_res and u_res.data and len(u_res.data) > 0:
                 user_profile_data = u_res.data[0]
                 has_profile = True
                 u_id = user_profile_data.get("id")
 
-                # 2. Fetch financial_profile for income / assets
                 if u_id:
-                    f_res = supabase.table("financial_profile").select("*").eq("user_profile_id", u_id).execute()
+                    # 2. Fetch financial_profile for fallback metrics
+                    f_res = (
+                        supabase
+                        .table("financial_profile")
+                        .select("*")
+                        .eq("user_profile_id", u_id)
+                        .execute()
+                    )
                     if f_res and f_res.data and len(f_res.data) > 0:
                         financial_profile_data = f_res.data[0]
-        except Exception:
-            # Resilient fallback: database failure or missing tables must not break Tax Estimator
+
+                    # 3. Fetch verified records from Document Vault (user_financial_records)
+                    v_res = (
+                        supabase
+                        .table("user_financial_records")
+                        .select("record_type, record_data")
+                        .eq("user_profile_id", u_id)
+                        .execute()
+                    )
+                    if v_res and v_res.data:
+                        vault_records_data = v_res.data
+
+        except Exception as exc:
+            # Resilient fallback: database failure or missing tables must not crash the flow
             user_profile_data = None
             financial_profile_data = None
+            vault_records_data = []
             has_profile = False
 
+        # Pass the extracted vault records to the normalizer
         normalized = TaxInputNormalizer.normalize_from_profiles(
             user_profile=user_profile_data,
             financial_profile=financial_profile_data,
+            vault_records=vault_records_data,
             financial_year=financial_year,
         )
 
@@ -1064,7 +1093,7 @@ class TaxEstimatorService:
             deduction_80tta=normalized.deduction_80tta,
             has_profile_data=has_profile,
             field_sources=normalized.field_sources,
-        )
+        )    
 
     @staticmethod
     def simulate_what_if(request: TaxWhatIfRequest) -> TaxWhatIfResponse:

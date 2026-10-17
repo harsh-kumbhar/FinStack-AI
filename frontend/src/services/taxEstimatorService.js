@@ -3,17 +3,8 @@ import { supabase } from './supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-/**
- * Tax Estimator Service
- * Centralizes all communication with the backend Tax Estimator module.
- * Single source of truth is always the backend deterministic calculation engine.
- */
 export const taxEstimatorService = {
 
-    /**
-     * Get authenticated authorization header from Supabase session.
-     * @returns {Promise<Object>}
-     */
     async getAuthHeaders() {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.access_token) {
@@ -22,12 +13,6 @@ export const taxEstimatorService = {
         return {};
     },
 
-    /**
-     * Fetch pre-filled tax input defaults derived from user's FinStack profile.
-     * Gracefully falls back to clean default inputs if profile is empty or backend is offline.
-     * @param {string} financialYear - e.g. "2024-25"
-     * @returns {Promise<Object>}
-     */
     async getProfileDefaults(financialYear = '2024-25') {
         try {
             const headers = await this.getAuthHeaders();
@@ -59,11 +44,6 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * Calculate tax liability by submitting normalized inputs to the backend engine.
-     * @param {Object} payload - { financial_year, gross_salary, other_income, deduction_80c, deduction_80d, deduction_80tta }
-     * @returns {Promise<Object>}
-     */
     async calculateTax(payload) {
         try {
             const headers = await this.getAuthHeaders();
@@ -90,12 +70,6 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * Simulate What-If tax scenarios using the authoritative backend engine.
-     * Guaranteed zero persistence or mutation of saved assessments.
-     * @param {Object} payload - { base_input, scenario_type, scenario_title, overrides }
-     * @returns {Promise<Object>}
-     */
     async simulateWhatIf(payload) {
         try {
             const headers = await this.getAuthHeaders();
@@ -107,10 +81,6 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * Retrieve assessment history for the authenticated user.
-     * @returns {Promise<Array>}
-     */
     async getHistory() {
         try {
             const headers = await this.getAuthHeaders();
@@ -122,11 +92,6 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * Retrieve full details of a specific past assessment.
-     * @param {string} assessmentId
-     * @returns {Promise<Object>}
-     */
     async getAssessmentDetail(assessmentId) {
         try {
             const headers = await this.getAuthHeaders();
@@ -138,13 +103,6 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * Fetch authoritative tax education data, slab structures, deduction limits,
-     * calculation flow stages, and glossary terms for the given financial year.
-     * Guaranteed zero hardcoding of tax numbers in frontend.
-     * @param {string} financialYear - e.g. "2024-25"
-     * @returns {Promise<Object>}
-     */
     async getTaxEducation(financialYear = '2024-25') {
         try {
             const response = await axios.get(`${API_URL}/tax-estimator/tax-education`, {
@@ -157,11 +115,6 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * Recalculate a past assessment with the latest tax rules and save new record.
-     * @param {string} assessmentId
-     * @returns {Promise<Object>}
-     */
     async recalculateAssessment(assessmentId) {
         try {
             const headers = await this.getAuthHeaders();
@@ -173,12 +126,6 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * Compare two historical tax assessments side-by-side with full delta breakdown.
-     * @param {string} assessmentId1
-     * @param {string} assessmentId2
-     * @returns {Promise<Object>}
-     */
     async compareAssessments(assessmentId1, assessmentId2) {
         try {
             const headers = await this.getAuthHeaders();
@@ -194,10 +141,6 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * Retrieve user's current Tax Estimator milestone for Financial Journey integration.
-     * @returns {Promise<Object>}
-     */
     async getJourneyMilestone() {
         try {
             const headers = await this.getAuthHeaders();
@@ -213,11 +156,6 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * Stage extracted document data in provisional unconfirmed state.
-     * @param {Object} payload
-     * @returns {Promise<Object>}
-     */
     async stageDocumentData(payload) {
         try {
             const headers = await this.getAuthHeaders();
@@ -229,12 +167,17 @@ export const taxEstimatorService = {
         }
     },
 
-    /**
-     * User confirmation of candidate fields extracted by Document Vault.
-     * Turns provisional document fields into trusted NormalizedTaxInput.
-     * @param {Object} payload - { document_id, decisions, staged_payload }
-     * @returns {Promise<Object>}
-     */
+    async sendChatMessage(payload) {
+        try {
+            const headers = await this.getAuthHeaders();
+            const response = await axios.post(`${API_URL}/tax-estimator/interview/chat`, payload, { headers });
+            return response.data;
+        } catch (error) {
+            console.error('Tax Estimator: AI Chat failed.', error);
+            throw error;
+        }
+    },
+
     async confirmDocumentReview(payload) {
         try {
             const headers = await this.getAuthHeaders();
@@ -246,5 +189,3 @@ export const taxEstimatorService = {
         }
     }
 };
-
-
