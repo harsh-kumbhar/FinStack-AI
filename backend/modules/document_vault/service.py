@@ -105,23 +105,27 @@ def validate_document_type(document_type: str) -> None:
 
 
 def get_user_profile_id(user_id: str) -> str:
-    """Get the user_profile ID associated with an authenticated user."""
-
-    response = (
-        supabase
-        .table("user_profile")
-        .select("id")
-        .eq("user_id", user_id)
-        .single()
-        .execute()
-    )
-
+    """
+    Fetches the internal user_profile ID for a given Supabase Auth user_id.
+    If the profile does not exist, it creates one with placeholder values to satisfy DB constraints.
+    """
+    response = supabase.table('user_profile').select('id').eq('user_id', user_id).execute()
+    
     if not response.data:
-        raise UserProfileNotFoundError(
-            "User profile not found."
-        )
-
-    return response.data["id"]
+        # Create a blank profile with placeholders to satisfy NOT NULL constraints
+        new_profile = supabase.table('user_profile').insert({
+            "user_id": user_id,
+            "full_name": "New User",         # Satisfies NOT NULL constraint
+            "phone_number": "Pending",       # Satisfies NOT NULL constraint (if applicable)
+            "profile_completed": False
+        }).execute()
+        
+        if not new_profile.data:
+            raise ValueError(f"Failed to create and fetch user_profile for user_id: {user_id}")
+            
+        return new_profile.data[0]['id']
+        
+    return response.data[0]['id']   
 
 
 def check_duplicate_document(
