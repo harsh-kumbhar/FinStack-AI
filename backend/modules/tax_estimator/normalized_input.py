@@ -191,6 +191,18 @@ class TaxInputNormalizer:
                         source=TaxInputSource.DOCUMENT_EXTRACTED, raw_value=gross_salary, confidence=0.99, 
                         notes="Extracted directly from verified ITR Document"
                     )
+                if data.get("section_80c") is not None:
+                    deduction_80c = float(data["section_80c"])
+                    field_sources["deduction_80c"] = FieldProvenance(
+                        source=TaxInputSource.DOCUMENT_EXTRACTED, raw_value=deduction_80c, confidence=0.99, 
+                        notes="Extracted directly from verified ITR Document"
+                    )
+                if data.get("section_80d") is not None:
+                    deduction_80d = float(data["section_80d"])
+                    field_sources["deduction_80d"] = FieldProvenance(
+                        source=TaxInputSource.DOCUMENT_EXTRACTED, raw_value=deduction_80d, confidence=0.99, 
+                        notes="Extracted directly from verified ITR Document"
+                    )
 
             elif r_type == "investment" and data.get("total_amount"):
                 deduction_80c = min(150000.0, float(data["total_amount"]))

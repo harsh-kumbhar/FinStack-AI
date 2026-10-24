@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../services/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import SmartFeedWidget from '../components/smartfeed/SmartFeedWidget';
+import { documentVaultService } from '../services/documentVaultService';
 
 const styles = {
     layout: {
@@ -25,7 +26,7 @@ const styles = {
         boxShadow: 'var(--shadow)'
     },
     sidebarHeader: {
-        padding: '20px',
+        padding: '24px 20px',
         fontSize: '24px',
         fontWeight: 'bold',
         borderBottom: '1px solid rgba(255,255,255,0.1)',
@@ -39,26 +40,20 @@ const styles = {
         gap: '4px'
     },
     navItem: {
-        padding: '12px 20px',
+        padding: '14px 20px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         cursor: 'pointer',
         color: 'rgba(255,255,255,0.8)',
         transition: 'var(--transition)',
-        fontSize: '14px'
+        fontSize: '14px',
+        fontWeight: '500'
     },
     navItemActive: {
         backgroundColor: 'var(--navy2)',
         color: 'var(--white)',
         borderLeft: '4px solid var(--saffron)'
-    },
-    badge: {
-        fontSize: '10px',
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        padding: '2px 6px',
-        borderRadius: '4px',
-        fontWeight: 'bold'
     },
     main: {
         flex: 1,
@@ -71,7 +66,7 @@ const styles = {
         top: 0,
         left: '240px',
         right: 0,
-        height: '64px',
+        height: '70px',
         backgroundColor: 'var(--white)',
         borderBottom: '1px solid var(--border)',
         display: 'flex',
@@ -92,119 +87,113 @@ const styles = {
         border: 'none',
         borderRadius: 'var(--radius-sm)',
         fontWeight: '600',
-        cursor: 'pointer'
+        cursor: 'pointer',
+        transition: 'var(--transition)'
     },
     content: {
-        marginTop: '64px',
+        marginTop: '70px',
         padding: '32px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '24px'
+        gap: '28px',
+        maxWidth: '1400px',
+        margin: '70px auto 0 auto',
+        width: '100%'
     },
     alertCard: {
-        backgroundColor: 'var(--warning-light)',
-        border: '1px solid var(--warning)',
-        padding: '20px',
+        backgroundColor: '#FFFBEB',
+        border: '1px solid #FDE68A',
+        padding: '20px 24px',
         borderRadius: 'var(--radius-md)',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
     },
     grid2: {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-        gap: '20px'
+        gap: '24px'
     },
     grid3: {
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
         gap: '20px'
     },
     card: {
         backgroundColor: 'var(--white)',
         border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-md)',
+        borderRadius: '12px',
         padding: '24px',
         boxShadow: 'var(--shadow-sm)'
     },
     cardTitle: {
-        fontSize: '16px',
+        fontSize: '14px',
         color: 'var(--text2)',
-        marginBottom: '16px',
-        fontWeight: '600'
+        marginBottom: '12px',
+        fontWeight: '700',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px'
     },
     cardValue: {
         fontSize: '28px',
         color: 'var(--navy)',
-        fontWeight: 'bold',
-        fontFamily: "'Noto Serif', Georgia, serif"
+        fontWeight: '800',
+        fontFamily: "'Noto Sans', sans-serif"
     },
     btnPrimary: {
-        padding: '10px 20px',
+        padding: '12px 24px',
         backgroundColor: 'var(--saffron)',
         color: 'var(--white)',
         border: 'none',
-        borderRadius: 'var(--radius-sm)',
-        fontWeight: 'bold',
+        borderRadius: '8px',
+        fontWeight: '700',
         cursor: 'pointer',
-        boxShadow: 'var(--shadow-sm)'
+        boxShadow: 'var(--shadow-sm)',
+        transition: 'var(--transition)',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px'
     },
     btnOutline: {
-        padding: '10px 20px',
-        backgroundColor: 'var(--white)',
+        padding: '10px 16px',
+        backgroundColor: '#F8FAFC',
         color: 'var(--navy)',
-        border: '1px solid var(--navy)',
-        borderRadius: 'var(--radius-sm)',
-        fontWeight: 'bold',
-        cursor: 'pointer'
+        border: '1px solid #E2E8F0',
+        borderRadius: '6px',
+        fontWeight: '600',
+        cursor: 'pointer',
+        fontSize: '13px',
+        transition: 'all 0.2s',
     },
     moduleCard: {
         backgroundColor: 'var(--white)',
         border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-md)',
-        padding: '20px',
+        borderRadius: '12px',
+        padding: '24px',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        minHeight: '140px',
-        transition: 'var(--transition)',
-        cursor: 'pointer'
-    },
-    moduleReady: {
-        borderTop: '4px solid var(--success)'
-    },
-    moduleSoon: {
-        borderTop: '4px solid var(--border2)',
-        opacity: 0.8
-    },
-    modalOverlay: {
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0,35,80,0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000
-    },
-    modalContent: {
-        backgroundColor: 'var(--white)',
-        padding: '32px',
-        borderRadius: 'var(--radius-lg)',
-        width: '400px',
-        textAlign: 'center',
-        boxShadow: 'var(--shadow-md)'
+        minHeight: '160px',
+        transition: 'all 0.3s ease',
+        cursor: 'pointer',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
     },
     timelineItem: {
         display: 'flex',
         gap: '16px',
-        marginBottom: '16px'
+        marginBottom: '20px',
+        alignItems: 'flex-start'
     },
-    timelineDot: {
-        width: '12px',
-        height: '12px',
-        backgroundColor: 'var(--saffron)',
-        borderRadius: '50%',
-        marginTop: '4px'
+    timelineIcon: {
+        width: '32px',
+        height: '32px',
+        borderRadius: '8px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: '16px',
+        flexShrink: 0
     }
 };
 
@@ -225,6 +214,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [userData, setUserData] = useState(null);
     const [financialData, setFinancialData] = useState(null);
+    const [recentDocs, setRecentDocs] = useState([]);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -233,6 +223,7 @@ export default function Dashboard() {
         const fetchDashboardData = async () => {
             if (!user) return;
             try {
+                // 1. Fetch User Profile
                 const { data: userProfile } = await supabase
                     .from('user_profile')
                     .select('*')
@@ -241,17 +232,22 @@ export default function Dashboard() {
 
                 if (userProfile) {
                     setUserData(userProfile);
-
+                    // 2. Fetch Financial Profile
                     const { data: finProfile } = await supabase
                         .from('financial_profile')
                         .select('*')
                         .eq('user_profile_id', userProfile.id)
                         .maybeSingle();
 
-                    if (finProfile) {
-                        setFinancialData(finProfile);
-                    }
+                    if (finProfile) setFinancialData(finProfile);
                 }
+
+                // 3. Fetch Recent Documents from Vault for Activity Feed
+                const docsResponse = await documentVaultService.listDocuments(1, 3);
+                if (docsResponse && docsResponse.documents) {
+                    setRecentDocs(docsResponse.documents);
+                }
+
             } catch (err) {
                 console.error("Dashboard Error:", err);
             } finally {
@@ -272,287 +268,223 @@ export default function Dashboard() {
     if (loading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: 'var(--bg)' }}>
-                <h2 style={{ color: 'var(--navy)' }}>Loading Dashboard...</h2>
+                <div style={{ textAlign: 'center' }}>
+                    <div style={{ width: '40px', height: '40px', border: '4px solid var(--border)', borderTop: '4px solid var(--saffron)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px auto' }}></div>
+                    <h2 style={{ color: 'var(--navy)', fontFamily: "'Noto Serif', serif" }}>Loading Command Center...</h2>
+                </div>
+                <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
             </div>
         );
     }
 
     const isProfileComplete = userData?.profile_completed || false;
     const income = financialData?.monthly_income || 0;
-    const savings = financialData?.monthly_savings || 0;
-    const savingsRate = income > 0 ? ((savings / income) * 100).toFixed(1) : 0;
+    const debt = financialData?.total_debt || 0;
+    const efund = financialData?.emergency_fund || 0;
     const today = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     return (
         <div style={styles.layout}>
-            {/* SIDEBAR */}
             <aside style={styles.sidebar}>
-                <div style={styles.sidebarHeader}>FinStack</div>
+                <div style={styles.sidebarHeader}>FinStack AI</div>
                 <nav style={styles.sidebarNav}>
                     {SIDEBAR_ITEMS.map((item, idx) => (
                         <div
                             key={idx}
                             style={{ ...styles.navItem, ...(item.active ? styles.navItemActive : {}) }}
-                            onClick={() => {
-                                if (item.soon) {
-                                    handleFeatureClick('soon');
-                                } else if (item.path) {
-                                    navigate(item.path);
-                                }
-                            }}
+                            onClick={() => item.path && navigate(item.path)}
                         >
                             <span>{item.label}</span>
-                            {item.soon && <span style={styles.badge}>Soon</span>}
                         </div>
                     ))}
                 </nav>
-                <div style={{ padding: '20px', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                    <div style={styles.navItem} onClick={logout}>Logout</div>
-                </div>
             </aside>
 
-            {/* MAIN AREA */}
             <main style={styles.main}>
-                {/* TOP NAVBAR */}
                 <header style={styles.topbar}>
-                    <div style={{ fontWeight: '600', color: 'var(--navy)' }}>
-                        Welcome back, {userData?.full_name?.split(' ')[0] || 'User'}
+                    <div style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '18px', fontFamily: "'Noto Serif', serif" }}>
+                        Financial Command Center
                     </div>
                     <div style={styles.topbarRight}>
-                        <span style={{ color: 'var(--text2)', fontSize: '14px' }}>{today}</span>
-                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--bg2)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}>
+                        <span style={{ color: 'var(--text2)', fontSize: '14px', fontWeight: '500' }}>{today}</span>
+                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: '#F1F5F9', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', border: '1px solid var(--border)' }}>
                             🔔
                         </div>
-                        <button style={styles.logoutBtn} onClick={logout}>Logout</button>
+                        <button style={styles.logoutBtn} onClick={logout}>Sign Out</button>
                     </div>
                 </header>
 
-                {/* CONTENT */}
                 <div style={styles.content}>
-
-                    {/* ALERT */}
                     {!isProfileComplete && (
                         <div style={styles.alertCard}>
                             <div>
-                                <h3 style={{ color: 'var(--warning)', marginBottom: '4px' }}>Profile Incomplete</h3>
-                                <p style={{ color: 'var(--text)', fontSize: '14px' }}>Complete your profile to unlock all FinStack AI features.</p>
+                                <h3 style={{ color: '#B45309', marginBottom: '6px', fontSize: '18px' }}>⚠️ Profile Incomplete</h3>
+                                <p style={{ color: '#92400E', fontSize: '14px', margin: 0 }}>Upload a salary slip to instantly unlock all AI features.</p>
                             </div>
-                            <button style={styles.btnPrimary} onClick={() => navigate('/profile')}>Complete Profile</button>
+                            <button style={{ ...styles.btnPrimary, backgroundColor: '#D97706' }} onClick={() => navigate('/profile')}>Complete Profile</button>
                         </div>
                     )}
 
                     <div style={styles.grid2}>
                         {/* WELCOME CARD */}
-                        <div style={styles.card}>
-                            <h2 style={{ ...styles.cardValue, fontSize: '24px', marginBottom: '16px' }}>
-                                Hello, {userData?.full_name || 'User'}
+                        <div style={{ ...styles.card, background: 'linear-gradient(135deg, #0A192F 0%, #112240 100%)', color: 'white', border: 'none' }}>
+                            <h2 style={{ fontSize: '28px', marginBottom: '8px', fontFamily: "'Noto Serif', serif", fontWeight: '700' }}>
+                                Welcome back, {userData?.full_name?.split(' ')[0] || 'User'} 👋
                             </h2>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', color: 'var(--text2)' }}>
-                                <p><strong>Email:</strong> {userData?.email || 'N/A'}</p>
-                                <p><strong>Location:</strong> {userData?.city ? `${userData.city}, ${userData.state}, ${userData.country}` : 'Not provided'}</p>
-                                <p><strong>Financial Goal:</strong> <span style={{ color: 'var(--saffron)', fontWeight: 'bold' }}>{financialData?.financial_goal ? financialData.financial_goal.replace('_', ' ').toUpperCase() : 'Not Set'}</span></p>
+                            <p style={{ color: '#94A3B8', fontSize: '14px', marginBottom: '24px' }}>Here is your financial pulse for today.</p>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Location</div>
+                                    <div style={{ fontSize: '14px', fontWeight: '500', marginTop: '4px' }}>{userData?.city ? `${userData.city}, ${userData.country}` : 'Not provided'}</div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '12px', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Primary Goal</div>
+                                    <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--saffron)', marginTop: '4px' }}>
+                                        {financialData?.financial_goal ? financialData.financial_goal.replace('_', ' ').toUpperCase() : 'Not Set'}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         {/* QUICK ACTIONS */}
                         <div style={styles.card}>
-                            <h3 style={styles.cardTitle}>Quick Actions</h3>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                                <button style={styles.btnPrimary} onClick={() => navigate('/profile')}>Edit Profile</button>
-                                <button style={styles.btnOutline} onClick={() => handleFeatureClick('soon')}>Upload Document</button>
-                                <button style={styles.btnOutline} onClick={() => navigate('/health-analyzer')}>Analyze Finances</button>
-                                <button style={styles.btnOutline} onClick={() => handleFeatureClick('soon')}>Refresh Dashboard</button>
+                            <h3 style={{ ...styles.cardTitle, color: 'var(--navy)' }}>⚡ Quick Actions</h3>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '20px' }}>
+                                <button style={styles.btnOutline} onClick={() => navigate('/document-vault')}>📄 Upload Document</button>
+                                <button style={styles.btnOutline} onClick={() => navigate('/health-analyzer')}>🩺 Analyze Finances</button>
+                                <button style={styles.btnOutline} onClick={() => navigate('/tax-estimator')}>📊 Estimate Taxes</button>
+                                <button style={styles.btnOutline} onClick={() => navigate('/profile')}>✏️ Edit Profile</button>
                             </div>
                         </div>
                     </div>
 
-                    {/* FINANCIAL SUMMARY / QUICK STATS */}
-                    <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginTop: '10px' }}>Financial Summary</h3>
-                    <div style={styles.grid3}>
-                        <div style={styles.card}>
-                            <div style={styles.cardTitle}>Monthly Income</div>
-                            <div style={styles.cardValue}>₹{income.toLocaleString('en-IN')}</div>
-                        </div>
-                        <div style={styles.card}>
-                            <div style={styles.cardTitle}>Monthly Expenses</div>
-                            <div style={styles.cardValue}>₹{(financialData?.monthly_expenses || 0).toLocaleString('en-IN')}</div>
-                        </div>
-                        <div style={styles.card}>
-                            <div style={styles.cardTitle}>Monthly Savings</div>
-                            <div style={styles.cardValue}>₹{savings.toLocaleString('en-IN')}</div>
-                        </div>
-                        <div style={styles.card}>
-                            <div style={styles.cardTitle}>Savings Rate</div>
-                            <div style={{ ...styles.cardValue, color: 'var(--success)' }}>{savingsRate}%</div>
-                        </div>
-                        <div style={styles.card}>
-                            <div style={styles.cardTitle}>Emergency Fund</div>
-                            <div style={styles.cardValue}>₹{(financialData?.emergency_fund || 0).toLocaleString('en-IN')}</div>
+                    {/* FINANCIAL SNAPSHOT */}
+                    <div>
+                        <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginBottom: '16px', fontFamily: "'Noto Serif', serif", fontWeight: 'bold' }}>Financial Snapshot</h3>
+                        <div style={styles.grid3}>
+                            <div style={styles.card}>
+                                <div style={styles.cardTitle}>Monthly Income</div>
+                                <div style={styles.cardValue}>₹{income.toLocaleString('en-IN')}</div>
+                            </div>
+                            <div style={styles.card}>
+                                <div style={styles.cardTitle}>Total Outstanding Debt</div>
+                                <div style={styles.cardValue}>₹{debt.toLocaleString('en-IN')}</div>
+                            </div>
+                            <div style={styles.card}>
+                                <div style={styles.cardTitle}>Emergency Fund</div>
+                                <div style={{ ...styles.cardValue, color: efund > (income * 3) ? 'var(--success)' : 'var(--navy)' }}>
+                                    ₹{efund.toLocaleString('en-IN')}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div style={styles.grid2}>
                         {/* AI MODULES */}
                         <div>
-                            <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginBottom: '20px' }}>
-                                AI Modules
+                            <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginBottom: '16px', fontFamily: "'Noto Serif', serif", fontWeight: 'bold' }}>
+                                Application Modules
                             </h3>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
 
-                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>
-                                        Document Vault
+                                <div style={styles.moduleCard} onClick={() => navigate('/document-vault')} onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                    <div>
+                                        <div style={{ fontSize: '24px', marginBottom: '12px' }}>📁</div>
+                                        <h3 style={{ fontSize: '16px', color: 'var(--navy)', marginBottom: '6px', fontWeight: '700' }}>Document Vault</h3>
+                                        <p style={{ fontSize: '12px', color: 'var(--text2)', margin: 0, lineHeight: '1.4' }}>Extract and store data securely from PDFs.</p>
                                     </div>
-
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <span style={{
-                                            fontSize: '12px',
-                                            color: 'var(--success)',
-                                            backgroundColor: 'var(--success-light)',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px'
-                                        }}>
-                                            Ready
-                                        </span>
-
-                                        <button
-                                            style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }}
-                                            onClick={() => navigate('/document-vault')}
-                                        >
-                                            Open
-                                        </button>
-                                    </div>
+                                    <div style={{ color: 'var(--saffron)', fontSize: '13px', fontWeight: '700', marginTop: '16px' }}>Open Module →</div>
                                 </div>
 
-                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>
-                                        Financial Health Analyzer
+                                <div style={styles.moduleCard} onClick={() => navigate('/health-analyzer')} onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                    <div>
+                                        <div style={{ fontSize: '24px', marginBottom: '12px' }}>🩺</div>
+                                        <h3 style={{ fontSize: '16px', color: 'var(--navy)', marginBottom: '6px', fontWeight: '700' }}>Health Analyzer</h3>
+                                        <p style={{ fontSize: '12px', color: 'var(--text2)', margin: 0, lineHeight: '1.4' }}>AI scoring for savings and debt metrics.</p>
                                     </div>
-
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <span style={{
-                                            fontSize: '12px',
-                                            color: 'var(--success)',
-                                            backgroundColor: 'var(--success-light)',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px'
-                                        }}>
-                                            Ready
-                                        </span>
-
-                                        <button
-                                            style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }}
-                                            onClick={() => navigate('/health-analyzer')}
-                                        >
-                                            Open
-                                        </button>
-                                    </div>
+                                    <div style={{ color: 'var(--saffron)', fontSize: '13px', fontWeight: '700', marginTop: '16px' }}>Open Module →</div>
                                 </div>
 
-                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>
-                                        SmartFeed
+                                <div style={styles.moduleCard} onClick={() => navigate('/loan-analyzer')} onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                    <div>
+                                        <div style={{ fontSize: '24px', marginBottom: '12px' }}>💳</div>
+                                        <h3 style={{ fontSize: '16px', color: 'var(--navy)', marginBottom: '6px', fontWeight: '700' }}>Loan Risk Assessor</h3>
+                                        <p style={{ fontSize: '12px', color: 'var(--text2)', margin: 0, lineHeight: '1.4' }}>Predict approval odds using XGBoost ML.</p>
                                     </div>
-
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <span style={{
-                                            fontSize: '12px',
-                                            color: 'var(--success)',
-                                            backgroundColor: 'var(--success-light)',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px'
-                                        }}>
-                                            Ready
-                                        </span>
-
-                                        <button
-                                            style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }}
-                                            onClick={() => navigate('/smartfeed')}
-                                        >
-                                            Open
-                                        </button>
-                                    </div>
+                                    <div style={{ color: 'var(--saffron)', fontSize: '13px', fontWeight: '700', marginTop: '16px' }}>Open Module →</div>
                                 </div>
 
-                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>
-                                        Financial Journey
+                                <div style={styles.moduleCard} onClick={() => navigate('/tax-estimator')} onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                    <div>
+                                        <div style={{ fontSize: '24px', marginBottom: '12px' }}>⚖️</div>
+                                        <h3 style={{ fontSize: '16px', color: 'var(--navy)', marginBottom: '6px', fontWeight: '700' }}>Tax Estimator</h3>
+                                        <p style={{ fontSize: '12px', color: 'var(--text2)', margin: 0, lineHeight: '1.4' }}>Conversational Old vs New regime calculator.</p>
                                     </div>
-
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <span style={{
-                                            fontSize: '12px',
-                                            color: 'var(--success)',
-                                            backgroundColor: 'var(--success-light)',
-                                            padding: '4px 8px',
-                                            borderRadius: '4px'
-                                        }}>
-                                            Ready
-                                        </span>
-
-                                        <button
-                                            style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }}
-                                            onClick={() => navigate('/financial-journey')}
-                                        >
-                                            Open
-                                        </button>
-                                    </div>
+                                    <div style={{ color: 'var(--saffron)', fontSize: '13px', fontWeight: '700', marginTop: '16px' }}>Open Module →</div>
                                 </div>
 
-                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>Loan Risk Assessment</div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
-                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/loan-analyzer')}>Open</button>
+                                <div style={styles.moduleCard} onClick={() => navigate('/smartfeed')} onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                    <div>
+                                        <div style={{ fontSize: '24px', marginBottom: '12px' }}>📰</div>
+                                        <h3 style={{ fontSize: '16px', color: 'var(--navy)', marginBottom: '6px', fontWeight: '700' }}>SmartFeed</h3>
+                                        <p style={{ fontSize: '12px', color: 'var(--text2)', margin: 0, lineHeight: '1.4' }}>Curated financial news and RAG insights.</p>
                                     </div>
-                                </div>
-                                <div style={{ ...styles.moduleCard, ...styles.moduleReady }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--navy)' }}>Tax Estimator</div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
-                                        <span style={{ fontSize: '12px', color: 'var(--success)', backgroundColor: 'var(--success-light)', padding: '4px 8px', borderRadius: '4px' }}>Ready</span>
-                                        <button style={{ ...styles.btnPrimary, padding: '6px 12px', fontSize: '12px' }} onClick={() => navigate('/tax-estimator')}>Open</button>
-                                    </div>
+                                    <div style={{ color: 'var(--saffron)', fontSize: '13px', fontWeight: '700', marginTop: '16px' }}>Open Module →</div>
                                 </div>
 
-
-                             
+                                <div style={styles.moduleCard} onClick={() => navigate('/financial-journey')} onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+                                    <div>
+                                        <div style={{ fontSize: '24px', marginBottom: '12px' }}>🗺️</div>
+                                        <h3 style={{ fontSize: '16px', color: 'var(--navy)', marginBottom: '6px', fontWeight: '700' }}>Financial Journey</h3>
+                                        <p style={{ fontSize: '12px', color: 'var(--text2)', margin: 0, lineHeight: '1.4' }}>Track your milestone progress over time.</p>
+                                    </div>
+                                    <div style={{ color: 'var(--saffron)', fontSize: '13px', fontWeight: '700', marginTop: '16px' }}>Open Module →</div>
+                                </div>
 
                             </div>
                         </div>
 
                         {/* RECENT ACTIVITY & SMARTFEED */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                            <SmartFeedWidget />
-
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <div>
-                                <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginBottom: '20px' }}>Recent Activity</h3>
-                                <div style={styles.card}>
-                                    <div style={styles.timelineItem}>
-                                        <div style={styles.timelineDot}></div>
-                                        <div>
-                                            <div style={{ fontWeight: '600', color: 'var(--text)' }}>Dashboard Loaded</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Just now</div>
-                                        </div>
-                                    </div>
-                                    {isProfileComplete && (
-                                        <div style={styles.timelineItem}>
-                                            <div style={{ ...styles.timelineDot, backgroundColor: 'var(--success)' }}></div>
+                                <h3 style={{ color: 'var(--navy)', fontSize: '20px', marginBottom: '16px', fontFamily: "'Noto Serif', serif", fontWeight: 'bold' }}>Recent Activity</h3>
+                                <div style={{ ...styles.card, padding: '24px 24px 8px 24px' }}>
+
+                                    {recentDocs.length > 0 ? recentDocs.map(doc => (
+                                        <div key={doc.id} style={styles.timelineItem}>
+                                            <div style={{ ...styles.timelineIcon, backgroundColor: '#E0F2FE', color: '#0284C7' }}>📄</div>
                                             <div>
-                                                <div style={{ fontWeight: '600', color: 'var(--text)' }}>Financial Information Saved</div>
-                                                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Recent</div>
+                                                <div style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '14px', marginBottom: '2px' }}>{doc.original_filename}</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>
+                                                    Status: <span style={{ color: doc.processing_status === 'completed' ? 'var(--success)' : 'var(--saffron)', fontWeight: '600' }}>{doc.processing_status.toUpperCase()}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )) : (
+                                        <div style={styles.timelineItem}>
+                                            <div style={{ ...styles.timelineIcon, backgroundColor: '#F1F5F9', color: '#64748B' }}>📝</div>
+                                            <div>
+                                                <div style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '14px', marginBottom: '2px' }}>Welcome to FinStack</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Account created and ready for setup.</div>
                                             </div>
                                         </div>
                                     )}
-                                    <div style={styles.timelineItem}>
-                                        <div style={{ ...styles.timelineDot, backgroundColor: 'var(--info)' }}></div>
-                                        <div>
-                                            <div style={{ fontWeight: '600', color: 'var(--text)' }}>Google Login Successful</div>
-                                            <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Recent</div>
+
+                                    {isProfileComplete && (
+                                        <div style={styles.timelineItem}>
+                                            <div style={{ ...styles.timelineIcon, backgroundColor: '#DCFCE7', color: '#16A34A' }}>✓</div>
+                                            <div>
+                                                <div style={{ fontWeight: '700', color: 'var(--navy)', fontSize: '14px', marginBottom: '2px' }}>Financial Profile Secured</div>
+                                                <div style={{ fontSize: '12px', color: 'var(--text2)' }}>Core parameters saved to database.</div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
+
+                            <SmartFeedWidget />
                         </div>
                     </div>
                 </div>

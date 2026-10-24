@@ -98,61 +98,90 @@ export default function ProfileCompletion() {
         setMessage({ type: '', text: '1/3 Uploading to Secure Vault...' });
 
         try {
-            // 1. Upload Document
-            const uploadResponse = await documentVaultService.uploadDocument(file, 'salary_slip');
-
-            // Extract the document ID from your backend response structure
+            const uploadResponse = await documentVaultService.uploadDocument(file, 'bank_statement');
             const docId = uploadResponse?.id || uploadResponse?.document?.id || uploadResponse?.data?.id;
 
             if (docId) {
                 setMessage({ type: '', text: '2/3 Analyzing document with AI...' });
-
-                // 2. Trigger AI Analysis
                 await documentVaultService.aiAnalyzeDocument(docId);
 
                 setMessage({ type: '', text: '3/3 Structuring financial data...' });
-
-                // 3. Fetch Extracted Data
                 const data = await documentVaultService.getExtractedData(docId);
                 const extracted = data?.extracted_data || {};
 
-                // Map the extracted JSON keys to our React form state
-                // Handling potential fallback keys from the LLM (gross_salary vs monthly_income)
-                const parsedIncome = extracted.gross_salary || extracted.net_salary || extracted.monthly_income || 0;
+                let calculatedIncome = extracted.gross_salary || extracted.net_salary || extracted.monthly_income || 0;
+                let calculatedExpenses = 0;
+                let calculatedSavings = 0;
+                let calculatedEmergencyFund = 0;
+                let inferredStatus = '';
+
+                if (Array.isArray(extracted.transactions) && extracted.transactions.length > 0) {
+                    const totalCredits = extracted.transactions
+                        .filter(t => t.type === 'credit' && t.amount)
+                        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+                    const totalDebits = extracted.transactions
+                        .filter(t => t.type === 'debit' && t.amount)
+                        .reduce((sum, t) => sum + Number(t.amount), 0);
+
+                    calculatedIncome = Math.round(totalCredits);
+                    calculatedExpenses = Math.round(totalDebits);
+                    calculatedSavings = Math.max(0, calculatedIncome - calculatedExpenses);
+                    calculatedEmergencyFund = Math.round(extracted.closing_balance || 0);
+
+                    if (extracted.account_holder && /M\/S|ENTERPRISES|TRADERS|PVT|LTD/i.test(extracted.account_holder)) {
+                        inferredStatus = 'business';
+                    } else {
+                        inferredStatus = 'salaried';
+                    }
+                } else if (calculatedIncome > 0) {
+                    inferredStatus = 'salaried';
+                }
+
+                const inferredName = extracted.employee_name || extracted.account_holder || '';
+
+                if (inferredName) {
+                    setPersonal(prev => ({
+                        ...prev,
+                        full_name: inferredName
+                    }));
+                }
 
                 setFinancial(prev => ({
                     ...prev,
-                    employment_status: 'salaried', // Default to salaried if uploading a salary slip
-                    monthly_income: parsedIncome > 0 ? Number(parsedIncome) : prev.monthly_income
+                    employment_status: inferredStatus || prev.employment_status,
+                    monthly_income: calculatedIncome > 0 ? calculatedIncome : prev.monthly_income,
+                    monthly_expenses: calculatedExpenses > 0 ? calculatedExpenses : prev.monthly_expenses,
+                    monthly_savings: calculatedSavings > 0 ? calculatedSavings : prev.monthly_savings,
+                    emergency_fund: calculatedEmergencyFund > 0 ? calculatedEmergencyFund : prev.emergency_fund
                 }));
 
                 setExtractedFields({
-                    employment_status: true,
-                    monthly_income: parsedIncome > 0
+                    full_name: Boolean(inferredName),
+                    employment_status: Boolean(inferredStatus),
+                    monthly_income: calculatedIncome > 0,
+                    monthly_expenses: calculatedExpenses > 0,
+                    monthly_savings: calculatedSavings > 0,
+                    emergency_fund: calculatedEmergencyFund > 0
                 });
 
-                // 4. Confirm Data automatically (optional, based on your DocumentVault logic)
                 try {
                     await documentVaultService.confirmDocumentData(docId);
                 } catch (confirmErr) {
-                    console.log("Could not auto-confirm data, continuing anyway.", confirmErr);
+                    console.log("Auto-confirm skipped or completed:", confirmErr);
                 }
-            } else {
-                console.warn("Could not retrieve document ID from upload response.");
             }
 
-            setMessage({ type: 'success', text: 'Document analyzed & saved to Vault!' });
-
+            setMessage({ type: 'success', text: 'Document analyzed! Please verify and edit the auto-filled values below.' });
             if (step === 1) setTimeout(() => setStep(2), 1500);
 
         } catch (error) {
             console.error("Document Extraction Error:", error);
             setMessage({ type: 'error', text: error.response?.data?.detail || 'AI extraction failed. Please fill details manually.' });
-
             if (step === 1) setTimeout(() => setStep(2), 1500);
         } finally {
             setSaving(false);
-            if (e.target) e.target.value = null; // Reset file input
+            if (e.target) e.target.value = null;
         }
     };
 
@@ -197,7 +226,6 @@ export default function ProfileCompletion() {
         setMessage({ type: '', text: '' });
 
         try {
-            // 1. Safely UPDATE the user_profile (Bypasses the RLS Insert block)
             const userPayload = {
                 ...personal,
                 profile_completed: true,
@@ -207,11 +235,10 @@ export default function ProfileCompletion() {
             const { error: userErr } = await supabase
                 .from('user_profile')
                 .update(userPayload)
-                .eq('user_id', user.id); // Must match auth user ID
+                .eq('user_id', user.id);
 
             if (userErr) throw userErr;
 
-            // Ensure we have the internal DB ID for the financial profile relation
             let currentProfileId = profileId;
             if (!currentProfileId) {
                 const { data: fetchProfile } = await supabase
@@ -224,7 +251,6 @@ export default function ProfileCompletion() {
                 setProfileId(currentProfileId);
             }
 
-            // 2. Save the Financial Profile using the secure internal ID
             const financialPayload = {
                 employment_status: financial.employment_status,
                 monthly_income: Number(financial.monthly_income) || 0,
@@ -245,14 +271,12 @@ export default function ProfileCompletion() {
                 .maybeSingle();
 
             if (finCheck) {
-                // Update existing financial profile
                 const { error: finErr } = await supabase
                     .from('financial_profile')
                     .update(financialPayload)
                     .eq('id', finCheck.id);
                 if (finErr) throw finErr;
             } else {
-                // Insert new financial profile
                 const { error: finErr } = await supabase
                     .from('financial_profile')
                     .insert([{ user_profile_id: currentProfileId, ...financialPayload }]);
@@ -285,13 +309,15 @@ export default function ProfileCompletion() {
                     </div>
                 )}
 
-                {/* HIDDEN FILE INPUT */}
                 <input type="file" id="onboarding-upload" style={{ display: 'none' }} accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileUpload} />
 
-                {/* STEP 1: UPLOAD DOCUMENTS */}
                 {step === 1 && (
                     <div>
-                        <p style={styles.subtitle}>Upload a recent Salary Slip or Bank Statement to auto-fill your details via FinStack AI.</p>
+                        <div style={{ backgroundColor: '#FFFBEB', color: '#B45309', padding: '12px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #FDE68A', fontSize: '14px' }}>
+                            <strong>💡 Recommendation:</strong> For the most accurate profile auto-fill, please upload a <strong>Salary Slip</strong> or a <strong>Bank Statement</strong>.
+                        </div>
+
+                        <p style={styles.subtitle}>Upload a recent document to auto-fill your details via FinStack AI.</p>
 
                         <div style={styles.uploadBox} onClick={() => !saving && document.getElementById('onboarding-upload').click()}>
                             <div style={{ fontSize: '48px', marginBottom: '16px' }}>📄</div>
@@ -311,9 +337,13 @@ export default function ProfileCompletion() {
                     </div>
                 )}
 
-                {/* STEP 2: VERIFY FORM */}
                 {step === 2 && (
                     <form onSubmit={handleSubmit}>
+                        {message.type === 'success' && (
+                            <div style={{ backgroundColor: '#F0FDF4', color: '#166534', padding: '12px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #BBF7D0', fontSize: '14px' }}>
+                                <strong>✅ AI Analysis Complete:</strong> We've auto-filled your details. Please review and change any values below as needed before saving.
+                            </div>
+                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px', paddingBottom: '20px', borderBottom: '1px solid var(--border)' }}>
                             <p style={{ ...styles.subtitle, margin: 0, textAlign: 'left' }}>
                                 Verify your information and complete any missing details.
@@ -332,7 +362,10 @@ export default function ProfileCompletion() {
                         <h3 style={styles.sectionTitle}>Personal Information</h3>
                         <div style={styles.grid}>
                             <div style={styles.formGroup}>
-                                <label style={styles.label}>Full Name *</label>
+                                <label style={styles.label}>
+                                    Full Name *
+                                    {extractedFields.full_name && <span style={styles.aiBadge}>AI Extracted</span>}
+                                </label>
                                 <input type="text" name="full_name" value={personal.full_name} onChange={handlePersonalChange} style={styles.input} required />
                             </div>
                             <div style={styles.formGroup}>
@@ -397,11 +430,17 @@ export default function ProfileCompletion() {
                                 <input type="number" min="0" name="monthly_income" value={financial.monthly_income} onChange={handleFinancialChange} style={styles.input} />
                             </div>
                             <div style={styles.formGroup}>
-                                <label style={styles.label}>Monthly Expenses (₹)</label>
+                                <label style={styles.label}>
+                                    Monthly Expenses (₹)
+                                    {extractedFields.monthly_expenses && <span style={styles.aiBadge}>AI Extracted</span>}
+                                </label>
                                 <input type="number" min="0" name="monthly_expenses" value={financial.monthly_expenses} onChange={handleFinancialChange} style={styles.input} />
                             </div>
                             <div style={styles.formGroup}>
-                                <label style={styles.label}>Monthly Savings (₹)</label>
+                                <label style={styles.label}>
+                                    Monthly Savings (₹)
+                                    {extractedFields.monthly_savings && <span style={styles.aiBadge}>AI Extracted</span>}
+                                </label>
                                 <input type="number" min="0" name="monthly_savings" value={financial.monthly_savings} onChange={handleFinancialChange} style={styles.input} />
                             </div>
                             <div style={styles.formGroup}>
@@ -409,7 +448,10 @@ export default function ProfileCompletion() {
                                 <input type="number" min="0" name="total_debt" value={financial.total_debt} onChange={handleFinancialChange} style={styles.input} />
                             </div>
                             <div style={styles.formGroup}>
-                                <label style={styles.label}>Emergency Fund (₹)</label>
+                                <label style={styles.label}>
+                                    Emergency Fund (₹)
+                                    {extractedFields.emergency_fund && <span style={styles.aiBadge}>AI Extracted</span>}
+                                </label>
                                 <input type="number" min="0" name="emergency_fund" value={financial.emergency_fund} onChange={handleFinancialChange} style={styles.input} />
                             </div>
                             <div style={styles.formGroup}>

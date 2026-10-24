@@ -1,38 +1,43 @@
 from typing import Optional
 
-
 DOCUMENT_TYPES = {
     "salary_slip": [
         "salary slip",
-        "salary statement",
-        "gross salary",
-        "net salary",
-        "basic salary",
+        "payslip",
+        "pay slip",
+        "net pay",         # Replaced "net salary" which overlaps with tax terms
+        "basic pay",       # Replaced "basic salary"
         "employee id",
         "pay period",
-        "earnings",
-        "deductions",
+        "provident fund",
+        "leave balance",
+        "uan",
     ],
     "bank_statement": [
         "bank statement",
         "account statement",
         "transaction date",
-        "transaction details",
         "opening balance",
         "closing balance",
-        "debit",
-        "credit",
         "available balance",
+        "ifsc",
+        "micr",
+        "withdrawal",
     ],
     "itr": [
         "income tax return",
+        "tax computation",       # Crucial for your generated document
         "itr",
         "assessment year",
         "gross total income",
-        "total income",
+        "net taxable income",
         "income tax",
         "tax payable",
-        "acknowledgement number",
+        "section 80c",           # Highly specific tax keywords
+        "section 80d",
+        "standard deduction",
+        "chapter vi-a",
+        "hra exemption",
     ],
     "pan": [
         "permanent account number",
@@ -49,7 +54,7 @@ DOCUMENT_TYPES = {
         "emi",
         "equated monthly instalment",
         "outstanding principal",
-        "loan amount",
+        "sanction date",
     ],
     "insurance": [
         "insurance policy",
@@ -82,26 +87,16 @@ DOCUMENT_TYPES = {
     ],
 }
 
-
 def normalize_text(text: str) -> str:
     """Normalize extracted text for keyword matching."""
     return " ".join(text.lower().split())
-
 
 def classify_document(
     raw_text: str,
 ) -> tuple[Optional[str], float, dict]:
     """
     Classify a financial document using keyword/phrase matching.
-
-    Returns:
-        (
-            document_type,
-            confidence_score,
-            matched_keywords
-        )
     """
-
     if not raw_text or not raw_text.strip():
         return None, 0.0, {}
 
@@ -112,7 +107,6 @@ def classify_document(
 
     for document_type, keywords in DOCUMENT_TYPES.items():
         matches = []
-
         for keyword in keywords:
             if keyword.lower() in text:
                 matches.append(keyword)
@@ -127,7 +121,6 @@ def classify_document(
     # Highest number of matching indicators wins.
     best_type = max(scores, key=scores.get)
     best_score = scores[best_type]
-
     total_keywords = len(DOCUMENT_TYPES[best_type])
 
     # Normalize to a 0–1 confidence score.

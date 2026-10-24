@@ -54,7 +54,7 @@ def extract_financial_data_with_ai(raw_text: str, document_type: str) -> str:
             
         instruction = "Extract salary details, currency, total salaries, and arrays of individual earnings and deductions."
 
-    # =========================================================
+# =========================================================
     # 3. ITR (Income Tax Return)
     # =========================================================
     elif document_type == "itr":
@@ -66,8 +66,10 @@ def extract_financial_data_with_ai(raw_text: str, document_type: str) -> str:
             gross_total_income: float | None = None
             total_income: float | None = None
             tax_payable: float | None = None
+            section_80c: float | None = None  # Added to extract 80C
+            section_80d: float | None = None  # Added to extract 80D
             
-        instruction = "Extract income tax return (ITR) details including PAN, assessment year, currency, and total tax amounts."
+        instruction = "Extract income tax return (ITR) and computation details. Explicitly look for Section 80C (like EPF/ELSS) and Section 80D (Health Insurance) deduction amounts."
 
     # =========================================================
     # 4. PAN CARD

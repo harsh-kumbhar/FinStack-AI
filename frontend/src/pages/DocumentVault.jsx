@@ -208,12 +208,18 @@ export default function DocumentVault() {
     }
 
     // --- AI Analyze Action ---
+    // --- AI Analyze Action ---
     async function handleAIAnalyze(doc) {
         try {
             setAnalyzingId(doc.id);
             setError("");
             await documentVaultService.aiAnalyzeDocument(doc.id);
             setSuccessMsg("AI Analysis complete!");
+
+            // Force fetch fresh data immediately to reset the extractionData state
+            const freshData = await documentVaultService.getExtractedData(doc.id);
+            setExtractionData(freshData);
+
             await fetchData();
             handleViewExtraction(doc); // Automatically open the results modal
         } catch (err) {

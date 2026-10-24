@@ -571,8 +571,8 @@ async def ai_analyze_document_endpoint(
             .update({
                 "extracted_data": extracted_data,
                 "extraction_status": "completed",
-                # Corrected: database expects a value between 0.0 and 1.0
                 "confidence_score": 0.95, 
+                "normalization_status": "pending"  # <--- ADD THIS LINE
             })
             .eq("document_id", document_id)
             .execute()
