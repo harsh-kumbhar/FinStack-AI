@@ -90,7 +90,28 @@ class LoanRiskService:
         risk_probability = risk_score_val / 100.0 if risk_score_val > 1.0 else risk_score_val
         
         # 6. Business Logic (Approve if confidence > 40%)
-        is_approved = approval_confidence > 0.40
+        raw_loan_amt = self._safe_float(p.get('LoanAmount'))
+        raw_annual_inc = self._safe_float(p.get('AnnualIncome'))
+        raw_monthly_debt = self._safe_float(p.get('MonthlyDebtPayments'))
+        raw_monthly_inc = raw_annual_inc / 12.0 if raw_annual_inc > 0 else 1.0
+        m_rate = (base_interest_rate / 100.0) / 12.0
+        if m_rate > 0 and loan_duration > 0:
+            emi_calc = (raw_loan_amt * m_rate * ((1 + m_rate) ** loan_duration)) / (((1 + m_rate) ** loan_duration) - 1)
+        elif loan_duration > 0:
+            emi_calc = raw_loan_amt / loan_duration
+        else:
+            emi_calc = 0.0
+        foir = (raw_monthly_debt + emi_calc) / raw_monthly_inc
+        if credit_score >= 700 and foir <= 0.55:
+            is_approved = True
+            calc_conf = round(0.72 + (credit_score - 700) * 0.001 - (foir - 0.20) * 0.15, 2)
+            approval_confidence = max(0.65, min(0.95, calc_conf))
+            calc_risk = round(0.12 + foir * 0.30 - (credit_score - 700) * 0.0005, 2)
+            risk_probability = max(0.10, min(0.35, calc_risk))
+        elif credit_score >= 650 and foir <= 0.60:
+            is_approved = approval_confidence >= 0.25
+        else:
+            is_approved = approval_confidence > 0.40
         risk_prediction = 0 if is_approved else 1
 
         # 7. Estimated Monthly Payment (Standard Amortization Formula)
